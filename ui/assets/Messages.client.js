@@ -1,9 +1,9 @@
 // ui/Messages.client.tsx
-import { render } from "https://esm.sh/preact@10.25.3";
-import { useEffect, useState } from "https://esm.sh/preact@10.25.3/hooks";
+import { render } from "preact";
+import { useEffect, useState } from "preact/hooks";
 
 // ui/Message.tsx
-import { Fragment, jsx, jsxs } from "https://esm.sh/preact@10.25.4/jsx-runtime";
+import { Fragment, jsx, jsxs } from "preact/jsx-runtime";
 function Message(props) {
   const item = props.message;
   return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsxs(
@@ -66,7 +66,7 @@ function Message(props) {
 }
 
 // ui/Messages.client.tsx
-import { jsx as jsx2 } from "https://esm.sh/preact@10.25.4/jsx-runtime";
+import { jsx as jsx2 } from "preact/jsx-runtime";
 function notifyMe(message) {
   if (!("Notification" in window)) alert("\u5F53\u524D\u6D4F\u89C8\u5668\u4E0D\u652F\u6301\u684C\u9762\u901A\u77E5");
   else if (Notification.permission === "granted") new Notification(message);

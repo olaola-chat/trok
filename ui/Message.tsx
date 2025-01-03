@@ -1,3 +1,6 @@
+/** @jsxRuntime automatic */
+/** @jsxImportSource preact */
+
 import type { TaskState } from "../type.ts";
 
 export default function Message(props: {

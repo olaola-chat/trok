@@ -1,5 +1,8 @@
-import { render } from "https://esm.sh/preact@10.25.3";
-import { useEffect, useState } from "https://esm.sh/preact@10.25.3/hooks";
+/** @jsxRuntime automatic */
+/** @jsxImportSource preact */
+
+import { render } from "preact";
+import { useEffect, useState } from "preact/hooks";
 import type { TaskState } from "../type.ts";
 import Message from "./Message.tsx";
 

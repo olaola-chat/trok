@@ -1,3 +1,6 @@
+/** @jsxRuntime automatic */
+/** @jsxImportSource preact */
+
 import { render } from "preact-render-to-string";
 import App from "./ui/App.server.tsx";
 import HubApp from "./ui/HubApp.server.tsx";

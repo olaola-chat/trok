@@ -1,3 +1,6 @@
+/** @jsxRuntime automatic */
+/** @jsxImportSource preact */
+
 import { resolve } from "@std/path/resolve";
 import Builder from "../Builder.ts";
 import Dispatcher from "../Dispatcher.ts";
@@ -15,6 +18,19 @@ export default function App() {
           type="text/css"
         />
         <script src="https://cdn.tailwindcss.com"></script>
+
+        <script
+          type="importmap"
+          dangerouslySetInnerHTML={{
+            __html: `{
+              "imports": {
+                "preact": "https://esm.sh/preact@10.23.1",
+                "preact/": "https://esm.sh/preact@10.23.1/"
+              }
+            }`,
+          }}
+        >
+        </script>
       </head>
       <body className="flex gap-2">
         <div className="w-2/5 h-screen overflow-y-scroll p-4 bg-base-300">

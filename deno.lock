@@ -4,6 +4,7 @@
     "jsr:@rawrxd/asta@~0.1.1": "0.1.1",
     "jsr:@std/cli@^1.0.9": "1.0.9",
     "jsr:@std/path@^1.0.8": "1.0.8",
+    "npm:esbuild@0.24.2": "0.24.2",
     "npm:esbuild@~0.24.2": "0.24.2",
     "npm:preact-render-to-string@^6.5.12": "6.5.12_preact@10.25.4",
     "npm:preact@10.25.4": "10.25.4"
@@ -134,6 +135,11 @@
     "preact@10.25.4": {
       "integrity": "sha512-jLdZDb+Q+odkHJ+MpW/9U5cODzqnB+fy2EiHSZES7ldV5LK7yjlVzTp7R8Xy6W6y75kfK8iWYtFVH7lvjwrCMA=="
     }
+  },
+  "remote": {
+    "https://esm.sh/preact@10.25.4/jsx-runtime": "94c740239c351533381ccd348604cb3656561ae7ee3cf3ea2ef6d232a69a2099",
+    "https://esm.sh/stable/preact@10.25.4/denonext/jsx-runtime.js": "60f31aedbe015b101d3ea951d5c8c9c9b5912426a11a33d57c8c5278fcd11d00",
+    "https://esm.sh/stable/preact@10.25.4/denonext/preact.mjs": "6b83349948fd5dddc7464dc6bd9a237d4bc602973dcb4fac93e80b9154441d6b"
   },
   "workspace": {
     "dependencies": [

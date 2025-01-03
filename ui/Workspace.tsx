@@ -1,3 +1,6 @@
+/** @jsxRuntime automatic */
+/** @jsxImportSource preact */
+
 import type { Repository, Task } from "../type.ts";
 
 export default function Workspace(

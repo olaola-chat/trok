@@ -1,3 +1,6 @@
+/** @jsxRuntime automatic */
+/** @jsxImportSource preact */
+
 import { resolve } from "@std/path/resolve";
 import Message from "./Message.tsx";
 import Hub from "../Hub.ts";
