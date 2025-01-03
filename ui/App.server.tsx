@@ -7,9 +7,15 @@ import Notify from "../Notify.ts";
 import Message from "./Message.tsx";
 import Workspace from "./Workspace.tsx";
 
-const url = new URL("assets/Messages.client.js", import.meta.url);
+async function getScriptContent() {
+  const url = new URL("assets/Messages.client.js", import.meta.url);
+  if (url.protocol.startsWith("http")) {
+    return await fetch(url).then((res) => res.text());
+  }
+  return Deno.readTextFileSync(url);
+}
 
-console.log(url);
+const scriptContent = await getScriptContent();
 
 export default function App() {
   return (
@@ -46,7 +52,7 @@ export default function App() {
         <script
           type="module"
           dangerouslySetInnerHTML={{
-            __html: Deno.readTextFileSync(url),
+            __html: scriptContent,
           }}
         >
         </script>
