@@ -1,16 +1,15 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource preact */
 
-import { dirname } from "@sicasta/esm-file-info";
-
-const __dirname = dirname(import.meta);
-
-import { resolve } from "@std/path/resolve";
 import Builder from "../Builder.ts";
 import Dispatcher from "../Dispatcher.ts";
 import Notify from "../Notify.ts";
 import Message from "./Message.tsx";
 import Workspace from "./Workspace.tsx";
+
+const url = new URL("assets/Messages.client.js", import.meta.url);
+
+console.log(url);
 
 export default function App() {
   return (
@@ -47,9 +46,7 @@ export default function App() {
         <script
           type="module"
           dangerouslySetInnerHTML={{
-            __html: Deno.readTextFileSync(
-              resolve(__dirname, "assets", "Messages.client.js"),
-            ),
+            __html: Deno.readTextFileSync(url),
           }}
         >
         </script>
