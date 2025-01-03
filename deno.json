@@ -1,0 +1,28 @@
+{
+  "name": "@trok/trok",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": "./mod.ts",
+  "imports": {
+    "@rawrxd/asta": "jsr:@rawrxd/asta@^0.1.1",
+    "@std/cli": "jsr:@std/cli@^1.0.9",
+    "@std/path": "jsr:@std/path@^1.0.8",
+    "esbuild": "npm:esbuild@^0.24.2",
+    "preact": "npm:preact@10.25.4",
+    "preact-render-to-string": "npm:preact-render-to-string@^6.5.12"
+  },
+
+  "tasks": {
+    "buildUI": "esbuild ui/Messages.client.tsx --jsx-factory=h --jsx-fragment=Fragment --bundle --jsx=automatic --jsx-import-source=https://esm.sh/preact@10.25.4 --format=esm --outfile=ui/assets/Messages.client.js"
+  },
+
+  "fmt": {
+    "lineWidth": 80,
+    "indentWidth": 2
+  },
+
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  }
+}
