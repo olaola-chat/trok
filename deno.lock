@@ -2,6 +2,7 @@
   "version": "4",
   "specifiers": {
     "jsr:@rawrxd/asta@~0.1.1": "0.1.1",
+    "jsr:@sicasta/esm-file-info@^1.0.1": "1.0.1",
     "jsr:@std/cli@^1.0.9": "1.0.9",
     "jsr:@std/path@^1.0.8": "1.0.8",
     "npm:esbuild@0.24.2": "0.24.2",
@@ -12,6 +13,9 @@
   "jsr": {
     "@rawrxd/asta@0.1.1": {
       "integrity": "3cb48253e1ddae3dbc97cb5d849a07feadd5d3185d366375a85bfbd44f77e4ac"
+    },
+    "@sicasta/esm-file-info@1.0.1": {
+      "integrity": "5e766ac00cb85e97f763b91f2d40d180aaaa70793f62ad1c02e84aedc7669db0"
     },
     "@std/cli@1.0.9": {
       "integrity": "557e5865af000efbf3f737dcfea5b8ab86453594f4a9cd8d08c9fa83d8e3f3bc"
@@ -144,6 +148,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@rawrxd/asta@~0.1.1",
+      "jsr:@sicasta/esm-file-info@^1.0.1",
       "jsr:@std/cli@^1.0.9",
       "jsr:@std/path@^1.0.8",
       "npm:esbuild@~0.24.2",
