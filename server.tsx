@@ -27,7 +27,7 @@ export default async function server(req: Request) {
     case "GET /": {
       if (req.headers.get("upgrade") !== "websocket") {
         return new Response(render(<App />), {
-          headers: { "content-type": "text/html" },
+          headers: { "content-type": "text/html; charset=UTF-8" },
         });
       }
 
@@ -47,7 +47,7 @@ export default async function server(req: Request) {
     case "GET /hub": {
       if (req.headers.get("upgrade") !== "websocket") {
         return new Response(render(<HubApp />), {
-          headers: { "content-type": "text/html" },
+          headers: { "content-type": "text/html; charset=UTF-8" },
         });
       }
       const { socket, response } = Deno.upgradeWebSocket(req);

@@ -1,11 +1,10 @@
 {
   "name": "@trok/trok",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "exports": "./mod.ts",
   "imports": {
     "@rawrxd/asta": "jsr:@rawrxd/asta@^0.1.1",
-    "@sicasta/esm-file-info": "jsr:@sicasta/esm-file-info@^1.0.1",
     "@std/cli": "jsr:@std/cli@^1.0.9",
     "@std/path": "jsr:@std/path@^1.0.8",
     "esbuild": "npm:esbuild@^0.24.2",

@@ -1,9 +1,18 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource preact */
 
-import { resolve } from "@std/path/resolve";
 import Message from "./Message.tsx";
 import Hub from "../Hub.ts";
+
+async function getScriptContent() {
+  const url = new URL("assets/Messages.client.js.txt", import.meta.url);
+  if (url.protocol.startsWith("http")) {
+    return await fetch(url).then((res) => res.text());
+  }
+  return Deno.readTextFileSync(url);
+}
+
+const scriptContent = await getScriptContent();
 
 export default function HubApp() {
   return (
@@ -23,11 +32,7 @@ export default function HubApp() {
         </div>
         <script
           type="module"
-          dangerouslySetInnerHTML={{
-            __html: Deno.readTextFileSync(
-              resolve(import.meta.dirname!, "assets", "Messages.client.js"),
-            ),
-          }}
+          dangerouslySetInnerHTML={{ __html: scriptContent }}
         >
         </script>
       </body>
