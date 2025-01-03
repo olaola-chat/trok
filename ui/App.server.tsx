@@ -8,7 +8,7 @@ import Message from "./Message.tsx";
 import Workspace from "./Workspace.tsx";
 
 async function getScriptContent() {
-  const url = new URL("assets/Messages.client.js", import.meta.url);
+  const url = new URL("assets/Messages.client.js.txt", import.meta.url);
   if (url.protocol.startsWith("http")) {
     return await fetch(url).then((res) => res.text());
   }

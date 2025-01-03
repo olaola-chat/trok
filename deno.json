@@ -1,6 +1,6 @@
 {
   "name": "@trok/trok",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "license": "MIT",
   "exports": "./mod.ts",
   "imports": {
@@ -14,7 +14,7 @@
   },
 
   "tasks": {
-    "buildUI": "esbuild ui/Messages.client.tsx --external:preact --bundle --format=esm --outfile=ui/assets/Messages.client.js"
+    "buildUI": "esbuild ui/Messages.client.tsx --external:preact --bundle --format=esm --outfile=ui/assets/Messages.client.js.txt"
   },
 
   "fmt": {
