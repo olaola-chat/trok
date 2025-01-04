@@ -39,6 +39,14 @@ export type TaskState = {
   message?: string;
 };
 
+export type SocketData = {
+  type: "notify";
+  data: TaskState;
+} | {
+  type: "builder";
+  data: StreamData;
+};
+
 export type Config = {
   // 通知地址: 未配置则打印在控制台
   notify?: string;

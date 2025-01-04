@@ -1,5 +1,5 @@
+import mitt from "https://esm.sh/mitt@3.0.1";
 import { join } from "@std/path/join";
-import { asta } from "@rawrxd/asta";
 import type { ExecLog, Package, Repository, StreamData, Task } from "./type.ts";
 import filterPackages from "./filterPackages.ts";
 import findGitRepositories from "./findGitRepositories.ts";
@@ -15,7 +15,7 @@ export default class Builder {
 
   static currentTask: Task | null = null;
 
-  static mitt = asta<{ data: StreamData }>();
+  static mitt = mitt<{ data: StreamData }>();
   private static async installPackage(
     absolutePackagePath: string,
     onStream: (data: string) => void,
@@ -109,10 +109,14 @@ export default class Builder {
       throw new Error(`branch ${task.branch} not found`);
     }
     const packages: Package[] = filterPackages(repository, task).map((item) => (
-      { ...item, status: "pending" }
+      { path: item, status: "pending" }
     ));
 
-    const commits = getCommits(repository.path, task.selector);
+    if (!packages.length) throw new Error("no package found");
+
+    const commits = task.selector.includes("...")
+      ? getCommits(repository.path, task.selector)
+      : [];
     return { repository, packages, commits };
   }
 
@@ -126,7 +130,8 @@ export default class Builder {
         try {
           await this.installPackage(
             packagePath,
-            (data) => this.mitt.emit("data", { task, data, packagePath }),
+            (data) =>
+              this.mitt.emit("data", { task, data, packagePath: item.path }),
           );
           await this.buildPackage(
             packagePath,

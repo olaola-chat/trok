@@ -1,11 +1,8 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource preact */
 
-import Message from "./Message.tsx";
-import Hub from "../Hub.ts";
-
 async function getScriptContent() {
-  const url = new URL("assets/Messages.client.js.txt", import.meta.url);
+  const url = new URL("dist/hub.js.txt", import.meta.url);
   if (url.protocol.startsWith("http")) {
     return await fetch(url).then((res) => res.text());
   }
@@ -14,7 +11,7 @@ async function getScriptContent() {
 
 const scriptContent = await getScriptContent();
 
-export default function HubApp() {
+export default function Hub() {
   return (
     <html>
       <head>
@@ -26,10 +23,7 @@ export default function HubApp() {
         <script src="https://cdn.tailwindcss.com">Hub</script>
       </head>
       <body className="flex gap-2">
-        <div className="w-3/5 p-5 h-screen overflow-y-scroll">
-          {Hub.messages.map((item) => <Message message={item} />)}
-          <div id="messages" />
-        </div>
+        <div id="root" />
         <script
           type="module"
           dangerouslySetInnerHTML={{ __html: scriptContent }}

@@ -4,7 +4,6 @@
   "license": "MIT",
   "exports": "./mod.ts",
   "imports": {
-    "@rawrxd/asta": "jsr:@rawrxd/asta@^0.1.1",
     "@std/cli": "jsr:@std/cli@^1.0.9",
     "@std/path": "jsr:@std/path@^1.0.8",
     "esbuild": "npm:esbuild@^0.24.2",
@@ -13,7 +12,9 @@
   },
 
   "tasks": {
-    "buildUI": "esbuild ui/Messages.client.tsx --external:preact --bundle --format=esm --outfile=ui/assets/Messages.client.js.txt"
+    "buildUI": "deno run buildIndexUI && deno run buildHubUI",
+    "buildIndexUI": "esbuild ui/src/pages/index/index.tsx --external:preact --bundle --format=esm --outfile=ui/dist/index.js.txt",
+    "buildHubUI": "esbuild ui/src/pages/hub/index.tsx --external:preact --bundle --format=esm --outfile=ui/dist/hub.js.txt"
   },
 
   "fmt": {

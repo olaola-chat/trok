@@ -1,26 +1,32 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource preact */
 
-import type { Repository, Task } from "../type.ts";
+import { render } from "preact";
+import { useMessages, useWorkspace } from "../../service/index.ts";
+import Task from "../../components/Task.tsx";
 
-export default function Workspace(
-  props: { workspace: Repository[]; tasks: Task[] },
-) {
+function Workspace() {
+  const workspace = useWorkspace();
   return (
     <div className="flex flex-col gap-2">
-      {props.workspace.map((item) => {
-        const list = props.tasks.filter(
-          ({ origin, branch }) =>
-            item.origin === origin && item.branch === branch,
-        );
-
+      {workspace.map((item) => {
         return (
           <form
             key={item.path}
-            action="/"
-            method="post"
-            encType="application/x-www-form-urlencoded"
             className="shadow bg-base-100 rounded-2xl p-2 flex flex-col gap-2 border-primary"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const form = new FormData(e.currentTarget);
+              fetch("/", {
+                method: "POST",
+                body: JSON.stringify({
+                  origin: item.origin,
+                  branch: item.branch,
+                  selector: form.get("selector") as string,
+                }),
+              });
+              e.currentTarget.reset();
+            }}
           >
             <div
               tabIndex={0}
@@ -43,20 +49,6 @@ export default function Workspace(
                 ))}
               </div>
             </div>
-
-            {list.length
-              ? (
-                <div className="flex flex-wrap p-5 min-h-32 shadow bg-primary-content rounded-2xl">
-                  {list.map((item) => (
-                    <div className="badge badge-primary" key={item.id}>
-                      {item.selector}
-                    </div>
-                  ))}
-                </div>
-              )
-              : null}
-            <input type="hidden" name="origin" value={item.origin} />
-            <input type="hidden" name="branch" value={item.branch} />
             <input
               type="text"
               name="selector"
@@ -73,3 +65,28 @@ export default function Workspace(
     </div>
   );
 }
+
+// TODO: 待处理任务列表
+
+function TaskList() {
+  const messages = useMessages("/messages");
+  const group = Object.values(
+    Object.groupBy(messages, (message) => message.task.id),
+  );
+  return group.map((item) => <Task states={item!} />);
+}
+
+function Main() {
+  return (
+    <div className="flex gap-2 ">
+      <div className="w-2/5 p-2 bg-base-200 h-screen overflow-y-scroll">
+        <Workspace />
+      </div>
+      <div className="w-3/5 p-2 h-screen overflow-y-scroll">
+        <TaskList />
+      </div>
+    </div>
+  );
+}
+
+render(<Main />, document.getElementById("root")!);
