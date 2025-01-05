@@ -7,7 +7,7 @@ import Dispatcher from "./Dispatcher.ts";
 import { getRandomString } from "./util.ts";
 import type { Task } from "./type.ts";
 import Builder from "./Builder.ts";
-import TaskSnapshot from "./TaskSnapshot.ts";
+import Snapshot from "./Snapshot.ts";
 
 export default async function server(req: Request) {
   const { pathname } = new URL(req.url);
@@ -23,7 +23,7 @@ export default async function server(req: Request) {
       const { socket, response } = Deno.upgradeWebSocket(req);
       socket.addEventListener("open", () => {
         console.log("a client connected!");
-        TaskSnapshot.mitt.on(
+        Snapshot.mitt.on(
           "snapshot",
           (message) =>
             socket.send(JSON.stringify({ type: "snapshot", data: message })),
@@ -55,7 +55,7 @@ export default async function server(req: Request) {
       });
 
     case "GET /snapshots":
-      return new Response(JSON.stringify(TaskSnapshot.snapshots), {
+      return new Response(JSON.stringify(Snapshot.snapshots), {
         headers: { "content-type": "application/json; charset=UTF-8" },
       });
 

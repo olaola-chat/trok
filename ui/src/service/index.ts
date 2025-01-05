@@ -1,5 +1,10 @@
-import { useEffect, useState } from "preact/hooks";
-import type { Repository, SocketData, Task, TaskState } from "../../../type.ts";
+import { useCallback, useEffect, useState } from "preact/hooks";
+import type {
+  Repository,
+  SocketData,
+  Task,
+  TaskSnapshot,
+} from "../../../type.ts";
 import mitt from "https://esm.sh/mitt@3.0.1";
 
 function notifyMe(message: string) {
@@ -15,21 +20,24 @@ function notifyMe(message: string) {
 export function useWorkspace() {
   const [workspace, setWorkspace] = useState<Repository[]>([]);
 
-  useEffect(
+  const fetchWorkspace = useCallback(
     () => void fetch("/workspace").then((res) => res.json()).then(setWorkspace),
     [],
   );
 
-  return workspace;
+  useEffect(() => void fetchWorkspace(), []);
+
+  return { workspace, fetchWorkspace };
 }
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  useEffect(
-    () => void fetch("/task").then((res) => res.json()).then(setTasks),
+  const fetchTasks = useCallback(
+    () => fetch("/task").then((res) => res.json()).then(setTasks),
     [],
   );
-  return tasks;
+  useEffect(() => void fetchTasks(), []);
+  return { tasks, fetchTasks };
 }
 
 export class Socket {
@@ -47,10 +55,10 @@ export class Socket {
   }
 }
 
-export function useSnapshots(channel: "/snapshots" | "/hub/snapshots") {
-  const [snapshots, setSnapshots] = useState<TaskState[]>([]);
+export function useSnapshots() {
+  const [snapshots, setSnapshots] = useState<TaskSnapshot[]>([]);
   useEffect(() => {
-    fetch(channel).then((res) => res.json()).then(setSnapshots).then(
+    fetch("/snapshots").then((res) => res.json()).then(setSnapshots).then(
       () => {
         Socket.mitt.on("data", (data) => {
           if (data.type === "snapshot") {
@@ -61,11 +69,11 @@ export function useSnapshots(channel: "/snapshots" | "/hub/snapshots") {
                 rejected: "处理失败",
               }[data.data.status],
             );
-            setSnapshots((messages) => [...messages, data.data]);
+            setSnapshots((snapshot) => [...snapshot!, data.data]);
           }
         });
       },
     );
-  }, [channel]);
+  }, []);
   return snapshots;
 }

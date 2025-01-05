@@ -30,7 +30,7 @@ export type Package = {
   logs?: ExecLog | Error;
 };
 
-export type TaskState = {
+export type TaskSnapshot = {
   task: Task;
   timestamp: number;
   status: "pending" | "resolved" | "rejected";
@@ -41,7 +41,7 @@ export type TaskState = {
 
 export type SocketData = {
   type: "snapshot";
-  data: TaskState;
+  data: TaskSnapshot;
 } | {
   type: "stream";
   data: StreamData;

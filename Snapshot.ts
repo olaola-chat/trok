@@ -1,15 +1,15 @@
 import mitt from "https://esm.sh/mitt@3.0.1";
 
-import type { TaskState } from "./type.ts";
+import type { TaskSnapshot } from "./type.ts";
 import { getConfig } from "./util.ts";
 
 const config = getConfig();
 
 // TODO: 只保存最近的100条消息
-export default abstract class TaskSnapshot {
-  static mitt = mitt<{ snapshot: TaskState }>();
-  static snapshots: TaskState[] = [];
-  static take(taskState: TaskState) {
+export default abstract class Snapshot {
+  static mitt = mitt<{ snapshot: TaskSnapshot }>();
+  static snapshots: TaskSnapshot[] = [];
+  static take(taskState: TaskSnapshot) {
     const snapshot = { ...taskState, timestamp: Date.now() };
     this.snapshots.push(snapshot);
     this.mitt.emit("snapshot", snapshot);

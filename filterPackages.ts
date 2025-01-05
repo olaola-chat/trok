@@ -1,5 +1,4 @@
 import type { Repository, Task } from "./type.ts";
-import { getCommits } from "./util.ts";
 
 function getChangedPackages(repository: Repository, diffSelector: string) {
   const command = new Deno.Command("git", {

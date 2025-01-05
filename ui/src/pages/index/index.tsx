@@ -2,13 +2,20 @@
 /** @jsxImportSource preact */
 
 import { render } from "preact";
-import { useSnapshots, useWorkspace } from "../../service/index.ts";
-import Task from "../../components/Task.tsx";
+import { Socket, useTasks, useWorkspace } from "../../service/index.ts";
+import { useEffect } from "preact/hooks";
+import { useSnapshots } from "../../service/index.ts";
+import type { Task } from "../../../../type.ts";
+import TaskState from "../../components/TaskState.tsx";
 
-function Workspace() {
-  const workspace = useWorkspace();
+function Workspace(
+  props: {
+    onCreateTask: (origin: string, branch: string, selector: string) => void;
+  },
+) {
+  const { workspace } = useWorkspace();
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 w-fit">
       {workspace.map((item) => {
         return (
           <form
@@ -17,14 +24,11 @@ function Workspace() {
             onSubmit={(e) => {
               e.preventDefault();
               const form = new FormData(e.currentTarget);
-              fetch("/", {
-                method: "POST",
-                body: JSON.stringify({
-                  origin: item.origin,
-                  branch: item.branch,
-                  selector: form.get("selector") as string,
-                }),
-              });
+              props.onCreateTask(
+                item.origin,
+                item.branch,
+                form.get("selector") as string,
+              );
               e.currentTarget.reset();
             }}
           >
@@ -66,25 +70,59 @@ function Workspace() {
   );
 }
 
-// TODO: 待处理任务列表
-
-function TaskList() {
-  const messages = useSnapshots("/snapshots");
-  const group = Object.values(
-    Object.groupBy(messages, (message) => message.task.id),
+function TaskList(props: { tasks: Task[] }) {
+  return (
+    <div className="stack fixed bottom-2 right-2">
+      {props.tasks.map((item) => {
+        return (
+          <div className="shadow rounded-lg p-4 bg-base-100 border text-center text-sm">
+            {item.origin}
+            <span className="badge badge-primary badge-sm mx-2">
+              {item.branch}
+            </span>
+            <span className="kbd kbd-sm">{item.selector}</span>
+          </div>
+        );
+      })}
+    </div>
   );
-  return group.map((item) => <Task states={item!} />);
 }
 
 function Main() {
+  const snapshots = useSnapshots();
+  const snapShotGroups = Object.values(
+    Object.groupBy(snapshots, (item) => item.task.id),
+  );
+
+  const { tasks, fetchTasks } = useTasks();
+
+  useEffect(() => {
+    Socket.mitt.on("data", (data) => {
+      if (data.type === "snapshot") void fetchTasks();
+    });
+  }, []);
+
   return (
     <div className="flex gap-2 ">
-      <div className="w-2/5 p-2 bg-base-200 h-screen overflow-y-scroll">
-        <Workspace />
+      <div className="p-2 bg-base-200 h-screen overflow-y-scroll w-96">
+        <Workspace
+          onCreateTask={async (origin, branch, selector) => {
+            await fetch("/", {
+              method: "POST",
+              body: JSON.stringify({
+                origin,
+                branch,
+                selector,
+              }),
+            });
+            fetchTasks();
+          }}
+        />
       </div>
-      <div className="w-3/5 p-2 h-screen overflow-y-scroll">
-        <TaskList />
+      <div className="p-2 h-screen overflow-y-scroll w-max">
+        {snapShotGroups.map((item) => <TaskState snapshots={item!} />)}
       </div>
+      <TaskList tasks={tasks} />
     </div>
   );
 }

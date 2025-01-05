@@ -2,13 +2,13 @@
 /** @jsxImportSource preact */
 
 import { useEffect, useState } from "preact/hooks";
-import type { StreamData, TaskState } from "../../../type.ts";
+import type { StreamData, TaskSnapshot } from "../../../type.ts";
 import { Socket } from "../service/index.ts";
 
-export default function Task(props: {
-  states: TaskState[];
+export default function TaskState(props: {
+  snapshots: TaskSnapshot[];
 }) {
-  const [taskState] = props.states.sort((a, b) => {
+  const [taskState] = props.snapshots.sort((a, b) => {
     const value = b.timestamp - a.timestamp;
     if (value !== 0) return value;
     return a.status === "pending" ? 1 : -1;
@@ -75,9 +75,13 @@ export default function Task(props: {
 
                     return (
                       <>
-                        <li className="text-sm">
+                        <li className="text-sm flex items-center gap-2">
                           {{
-                            pending: <span className="text-warning">-</span>,
+                            pending: packageStream.length
+                              ? (
+                                <span className="loading loading-spinner text-warning loading-xs" />
+                              )
+                              : <span className="text-warning">-</span>,
                             rejected: <span className="text-error">✗</span>,
                             resolved: <span className="text-primary">✓</span>,
                           }[packageItem.status]} {packageItem.path}

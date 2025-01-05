@@ -6,7 +6,7 @@ import findGitRepositories from "./findGitRepositories.ts";
 import getPackageManager from "./getPackageManager.ts";
 import { cloneObj, getCommits, isSameGitOrigin } from "./util.ts";
 import { resolve } from "@std/path/resolve";
-import TaskSnapshot from "./TaskSnapshot.ts";
+import Snapshot from "./Snapshot.ts";
 
 const dir = resolve(Deno.cwd(), "..", "ola");
 
@@ -124,7 +124,7 @@ export default class Builder {
     this.currentTask = task;
     try {
       const { repository, packages, commits } = this.prepare(task);
-      TaskSnapshot.take(
+      Snapshot.take(
         cloneObj({
           task,
           status: "pending",
@@ -152,7 +152,7 @@ export default class Builder {
           item.logs = err as ExecLog | Error;
           continue;
         } finally {
-          TaskSnapshot.take(
+          Snapshot.take(
             cloneObj({
               task,
               status: "pending",
@@ -164,7 +164,7 @@ export default class Builder {
           await this.checkRepositoryDirty(repository);
         }
       }
-      TaskSnapshot.take(
+      Snapshot.take(
         cloneObj({
           task,
           status: "resolved",
@@ -174,7 +174,7 @@ export default class Builder {
         }),
       );
     } catch (err) {
-      TaskSnapshot.take({
+      Snapshot.take({
         task: task,
         status: "rejected",
         message: (err as Error).message,

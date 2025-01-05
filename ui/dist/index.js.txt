@@ -2,7 +2,7 @@
 import { render } from "preact";
 
 // ui/src/service/index.ts
-import { useEffect, useState } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 import mitt from "https://esm.sh/mitt@3.0.1";
 function notifyMe(message) {
   if (!("Notification" in window)) alert("\u5F53\u524D\u6D4F\u89C8\u5668\u4E0D\u652F\u6301\u684C\u9762\u901A\u77E5");
@@ -15,11 +15,21 @@ function notifyMe(message) {
 }
 function useWorkspace() {
   const [workspace, setWorkspace] = useState([]);
-  useEffect(
+  const fetchWorkspace = useCallback(
     () => void fetch("/workspace").then((res) => res.json()).then(setWorkspace),
     []
   );
-  return workspace;
+  useEffect(() => void fetchWorkspace(), []);
+  return { workspace, fetchWorkspace };
+}
+function useTasks() {
+  const [tasks, setTasks] = useState([]);
+  const fetchTasks = useCallback(
+    () => fetch("/task").then((res) => res.json()).then(setTasks),
+    []
+  );
+  useEffect(() => void fetchTasks(), []);
+  return { tasks, fetchTasks };
 }
 var Socket = class {
   static mitt = mitt();
@@ -34,10 +44,10 @@ var Socket = class {
     });
   }
 };
-function useSnapshots(channel) {
+function useSnapshots() {
   const [snapshots, setSnapshots] = useState([]);
   useEffect(() => {
-    fetch(channel).then((res) => res.json()).then(setSnapshots).then(
+    fetch("/snapshots").then((res) => res.json()).then(setSnapshots).then(
       () => {
         Socket.mitt.on("data", (data) => {
           if (data.type === "snapshot") {
@@ -48,20 +58,23 @@ function useSnapshots(channel) {
                 rejected: "\u5904\u7406\u5931\u8D25"
               }[data.data.status]
             );
-            setSnapshots((messages) => [...messages, data.data]);
+            setSnapshots((snapshot) => [...snapshot, data.data]);
           }
         });
       }
     );
-  }, [channel]);
+  }, []);
   return snapshots;
 }
 
-// ui/src/components/Task.tsx
+// ui/src/pages/index/index.tsx
+import { useEffect as useEffect3 } from "preact/hooks";
+
+// ui/src/components/TaskState.tsx
 import { useEffect as useEffect2, useState as useState2 } from "preact/hooks";
 import { Fragment, jsx, jsxs } from "preact/jsx-runtime";
-function Task(props) {
-  const [taskState] = props.states.sort((a, b) => {
+function TaskState(props) {
+  const [taskState] = props.snapshots.sort((a, b) => {
     const value = b.timestamp - a.timestamp;
     if (value !== 0) return value;
     return a.status === "pending" ? 1 : -1;
@@ -91,7 +104,7 @@ function Task(props) {
           {
             className: `chat-bubble min-w-80 relative chat-bubble-${{
               pending: "neutral",
-              resolved: "primary",
+              resolved: "success",
               rejected: "error"
             }[taskState.status]}`,
             children: [
@@ -113,11 +126,11 @@ function Task(props) {
                     (item) => item.packagePath === packageItem.path
                   );
                   return /* @__PURE__ */ jsxs(Fragment, { children: [
-                    /* @__PURE__ */ jsxs("li", { className: "text-sm", children: [
+                    /* @__PURE__ */ jsxs("li", { className: "text-sm flex items-center gap-2", children: [
                       {
-                        pending: /* @__PURE__ */ jsx("span", { className: "text-warning", children: "-" }),
+                        pending: packageStream.length ? /* @__PURE__ */ jsx("span", { className: "loading loading-spinner text-warning loading-xs" }) : /* @__PURE__ */ jsx("span", { className: "text-warning", children: "-" }),
                         rejected: /* @__PURE__ */ jsx("span", { className: "text-error", children: "\u2717" }),
-                        resolved: /* @__PURE__ */ jsx("span", { className: "text-success", children: "\u2713" })
+                        resolved: /* @__PURE__ */ jsx("span", { className: "text-primary", children: "\u2713" })
                       }[packageItem.status],
                       " ",
                       packageItem.path
@@ -173,9 +186,9 @@ function Task(props) {
 
 // ui/src/pages/index/index.tsx
 import { jsx as jsx2, jsxs as jsxs2 } from "preact/jsx-runtime";
-function Workspace() {
-  const workspace = useWorkspace();
-  return /* @__PURE__ */ jsx2("div", { className: "flex flex-col gap-2", children: workspace.map((item) => {
+function Workspace(props) {
+  const { workspace } = useWorkspace();
+  return /* @__PURE__ */ jsx2("div", { className: "flex flex-col gap-2 w-fit", children: workspace.map((item) => {
     return /* @__PURE__ */ jsxs2(
       "form",
       {
@@ -183,14 +196,11 @@ function Workspace() {
         onSubmit: (e) => {
           e.preventDefault();
           const form = new FormData(e.currentTarget);
-          fetch("/", {
-            method: "POST",
-            body: JSON.stringify({
-              origin: item.origin,
-              branch: item.branch,
-              selector: form.get("selector")
-            })
-          });
+          props.onCreateTask(
+            item.origin,
+            item.branch,
+            form.get("selector")
+          );
           e.currentTarget.reset();
         },
         children: [
@@ -232,17 +242,45 @@ function Workspace() {
     );
   }) });
 }
-function TaskList() {
-  const messages = useSnapshots("/snapshots");
-  const group = Object.values(
-    Object.groupBy(messages, (message) => message.task.id)
-  );
-  return group.map((item) => /* @__PURE__ */ jsx2(Task, { states: item }));
+function TaskList(props) {
+  return /* @__PURE__ */ jsx2("div", { className: "stack fixed bottom-2 right-2", children: props.tasks.map((item) => {
+    return /* @__PURE__ */ jsxs2("div", { className: "shadow rounded-lg p-4 bg-base-100 border text-center text-sm", children: [
+      item.origin,
+      /* @__PURE__ */ jsx2("span", { className: "badge badge-primary badge-sm mx-2", children: item.branch }),
+      /* @__PURE__ */ jsx2("span", { className: "kbd kbd-sm", children: item.selector })
+    ] });
+  }) });
 }
 function Main() {
+  const snapshots = useSnapshots();
+  const snapShotGroups = Object.values(
+    Object.groupBy(snapshots, (item) => item.task.id)
+  );
+  const { tasks, fetchTasks } = useTasks();
+  useEffect3(() => {
+    Socket.mitt.on("data", (data) => {
+      if (data.type === "snapshot") void fetchTasks();
+    });
+  }, []);
   return /* @__PURE__ */ jsxs2("div", { className: "flex gap-2 ", children: [
-    /* @__PURE__ */ jsx2("div", { className: "w-2/5 p-2 bg-base-200 h-screen overflow-y-scroll", children: /* @__PURE__ */ jsx2(Workspace, {}) }),
-    /* @__PURE__ */ jsx2("div", { className: "w-3/5 p-2 h-screen overflow-y-scroll", children: /* @__PURE__ */ jsx2(TaskList, {}) })
+    /* @__PURE__ */ jsx2("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll w-96", children: /* @__PURE__ */ jsx2(
+      Workspace,
+      {
+        onCreateTask: async (origin, branch, selector) => {
+          await fetch("/", {
+            method: "POST",
+            body: JSON.stringify({
+              origin,
+              branch,
+              selector
+            })
+          });
+          fetchTasks();
+        }
+      }
+    ) }),
+    /* @__PURE__ */ jsx2("div", { className: "p-2 h-screen overflow-y-scroll w-max", children: snapShotGroups.map((item) => /* @__PURE__ */ jsx2(TaskState, { snapshots: item })) }),
+    /* @__PURE__ */ jsx2(TaskList, { tasks })
   ] });
 }
 render(/* @__PURE__ */ jsx2(Main, {}), document.getElementById("root"));
