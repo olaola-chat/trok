@@ -31,6 +31,7 @@ export type Package = {
 };
 
 export type TaskSnapshot = {
+  id: string;
   task: Task;
   timestamp: number;
   status: "pending" | "resolved" | "rejected";
@@ -48,6 +49,6 @@ export type SocketData = {
 };
 
 export type Config = {
-  // 通知地址: 未配置则打印在控制台
+  // 通知地址
   notify?: string;
 };

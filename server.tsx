@@ -5,9 +5,21 @@ import { render } from "preact-render-to-string";
 import Index from "./ui/index.server.tsx";
 import Dispatcher from "./Dispatcher.ts";
 import { getRandomString } from "./util.ts";
-import type { Task } from "./type.ts";
+import type { SocketData, Task } from "./type.ts";
 import Builder from "./Builder.ts";
-import Snapshot from "./Snapshot.ts";
+import Hub from "./Hub.ts";
+
+function html(data: string) {
+  return new Response(data, {
+    headers: { "content-type": "text/html; charset=UTF-8" },
+  });
+}
+
+function json(data: object) {
+  return new Response(JSON.stringify(data), {
+    headers: { "content-type": "application/json; charset=UTF-8" },
+  });
+}
 
 export default async function server(req: Request) {
   const { pathname } = new URL(req.url);
@@ -15,49 +27,60 @@ export default async function server(req: Request) {
   switch (`${req.method} ${pathname}`) {
     case "GET /": {
       if (req.headers.get("upgrade") !== "websocket") {
-        return new Response(render(<Index />), {
-          headers: { "content-type": "text/html; charset=UTF-8" },
-        });
+        return html(render(<Index />));
       }
 
+      // 接收websocket推送过来的数据
       const { socket, response } = Deno.upgradeWebSocket(req);
-      socket.addEventListener("open", () => {
-        console.log("a client connected!");
-        Snapshot.mitt.on(
-          "snapshot",
-          (message) =>
-            socket.send(JSON.stringify({ type: "snapshot", data: message })),
-        );
-        Builder.mitt.on(
-          "stream",
-          (message) =>
-            socket.send(JSON.stringify({ type: "stream", data: message })),
-        );
-      });
-      socket.addEventListener("message", (event) => {
-        if (event.data === "ping") socket.send("pong");
-      });
+
+      socket.addEventListener(
+        "message",
+        (e) => {
+          const data = JSON.parse(e.data) as SocketData;
+          if (data.type === "snapshot") {
+            Hub.snapshots.push(data.data);
+            Hub.mitt.emit("snapshot", data.data);
+          }
+          if (data.type === "stream") {
+            Hub.mitt.emit("stream", data.data);
+          }
+        },
+      );
       return response;
     }
-
-    case "POST /": {
-      const data = await req.json() as Omit<Task, "id">;
-      Dispatcher.register({ ...data, id: getRandomString() });
-      return new Response(null, { status: 302, headers: { location: "/" } });
-    }
-
-    case "GET /workspace":
-      return new Response(JSON.stringify(Builder.workspace));
 
     case "GET /task":
       return new Response(JSON.stringify(Dispatcher.queue), {
         headers: { "content-type": "application/json; charset=UTF-8" },
       });
 
-    case "GET /snapshots":
-      return new Response(JSON.stringify(Snapshot.snapshots), {
-        headers: { "content-type": "application/json; charset=UTF-8" },
+    case "POST /task": {
+      const data = await req.json() as Omit<Task, "id">;
+      Dispatcher.register({ ...data, id: getRandomString() });
+      return new Response();
+    }
+
+    case "GET /workspace":
+      return json(Builder.workspace);
+
+    case "GET /hub": {
+      if (req.headers.get("upgrade") !== "websocket") {
+        return json(Hub.snapshots);
+      }
+
+      // 推送消息
+      const { socket, response } = Deno.upgradeWebSocket(req);
+      socket.addEventListener("open", () => {
+        Hub.mitt.on("snapshot", (data) => {
+          socket.send(JSON.stringify({ type: "snapshot", data }));
+        });
+        Hub.mitt.on("stream", (data) => {
+          socket.send(JSON.stringify({ type: "stream", data }));
+        });
       });
+
+      return response;
+    }
 
     default:
       return new Response("Not Found", { status: 404 });

@@ -4,7 +4,7 @@
 import { render } from "preact";
 import { Socket, useTasks, useWorkspace } from "../../service/index.ts";
 import { useEffect } from "preact/hooks";
-import { useSnapshots } from "../../service/index.ts";
+import { useHub } from "../../service/index.ts";
 import type { Task } from "../../../../type.ts";
 import TaskState from "../../components/TaskState.tsx";
 
@@ -89,7 +89,7 @@ function TaskList(props: { tasks: Task[] }) {
 }
 
 function Main() {
-  const snapshots = useSnapshots();
+  const snapshots = useHub();
   const snapShotGroups = Object.values(
     Object.groupBy(snapshots, (item) => item.task.id),
   );
@@ -107,7 +107,7 @@ function Main() {
       <div className="p-2 bg-base-200 h-screen overflow-y-scroll w-96">
         <Workspace
           onCreateTask={async (origin, branch, selector) => {
-            await fetch("/", {
+            await fetch("/task", {
               method: "POST",
               body: JSON.stringify({
                 origin,

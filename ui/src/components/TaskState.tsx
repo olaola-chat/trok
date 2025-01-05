@@ -46,10 +46,6 @@ export default function TaskState(props: {
             }[taskState.status]
           }`}
         >
-          {taskState.status === "pending" && (
-            <span className="loading loading-spinner absolute right-2 top-2 text-warning loading-xs" />
-          )}
-
           {taskState.message}
           {taskState.commits?.length
             ? (

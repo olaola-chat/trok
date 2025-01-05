@@ -42,23 +42,22 @@ export function useTasks() {
 
 export class Socket {
   static mitt = mitt<{ data: SocketData }>();
-  static client = new WebSocket(location.href.replace("http", "ws"));
+  static client = new WebSocket(
+    new URL("hub", location.href).href.replace("http", "ws"),
+  );
 
   static {
     this.client.addEventListener("message", (event) => {
       const data = JSON.parse(event.data) as SocketData;
       this.mitt.emit("data", data);
     });
-    this.client.addEventListener("error", (event) => {
-      console.log(event);
-    });
   }
 }
 
-export function useSnapshots() {
+export function useHub() {
   const [snapshots, setSnapshots] = useState<TaskSnapshot[]>([]);
   useEffect(() => {
-    fetch("/snapshots").then((res) => res.json()).then(setSnapshots).then(
+    fetch("/hub").then((res) => res.json()).then(setSnapshots).then(
       () => {
         Socket.mitt.on("data", (data) => {
           if (data.type === "snapshot") {

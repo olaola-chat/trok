@@ -33,21 +33,20 @@ function useTasks() {
 }
 var Socket = class {
   static mitt = mitt();
-  static client = new WebSocket(location.href.replace("http", "ws"));
+  static client = new WebSocket(
+    new URL("hub", location.href).href.replace("http", "ws")
+  );
   static {
     this.client.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
       this.mitt.emit("data", data);
     });
-    this.client.addEventListener("error", (event) => {
-      console.log(event);
-    });
   }
 };
-function useSnapshots() {
+function useHub() {
   const [snapshots, setSnapshots] = useState([]);
   useEffect(() => {
-    fetch("/snapshots").then((res) => res.json()).then(setSnapshots).then(
+    fetch("/hub").then((res) => res.json()).then(setSnapshots).then(
       () => {
         Socket.mitt.on("data", (data) => {
           if (data.type === "snapshot") {
@@ -108,7 +107,6 @@ function TaskState(props) {
               rejected: "error"
             }[taskState.status]}`,
             children: [
-              taskState.status === "pending" && /* @__PURE__ */ jsx("span", { className: "loading loading-spinner absolute right-2 top-2 text-warning loading-xs" }),
               taskState.message,
               taskState.commits?.length ? /* @__PURE__ */ jsxs(Fragment, { children: [
                 /* @__PURE__ */ jsx("h6", { children: "\u63D0\u4EA4\u8BB0\u5F55" }),
@@ -252,7 +250,7 @@ function TaskList(props) {
   }) });
 }
 function Main() {
-  const snapshots = useSnapshots();
+  const snapshots = useHub();
   const snapShotGroups = Object.values(
     Object.groupBy(snapshots, (item) => item.task.id)
   );
@@ -267,7 +265,7 @@ function Main() {
       Workspace,
       {
         onCreateTask: async (origin, branch, selector) => {
-          await fetch("/", {
+          await fetch("/task", {
             method: "POST",
             body: JSON.stringify({
               origin,

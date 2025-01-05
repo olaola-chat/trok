@@ -1,12 +1,23 @@
 import mitt from "https://esm.sh/mitt@3.0.1";
 import { join } from "@std/path/join";
-import type { ExecLog, Package, Repository, StreamData, Task } from "./type.ts";
+import type {
+  ExecLog,
+  Package,
+  Repository,
+  StreamData,
+  Task,
+  TaskSnapshot,
+} from "./type.ts";
 import filterPackages from "./filterPackages.ts";
 import findGitRepositories from "./findGitRepositories.ts";
 import getPackageManager from "./getPackageManager.ts";
-import { cloneObj, getCommits, isSameGitOrigin } from "./util.ts";
+import {
+  cloneObj,
+  getCommits,
+  getRandomString,
+  isSameGitOrigin,
+} from "./util.ts";
 import { resolve } from "@std/path/resolve";
-import Snapshot from "./Snapshot.ts";
 
 const dir = resolve(Deno.cwd(), "..", "ola");
 
@@ -15,7 +26,7 @@ export default class Builder {
 
   static currentTask: Task | null = null;
 
-  static mitt = mitt<{ stream: StreamData }>();
+  static mitt = mitt<{ stream: StreamData; snapshot: TaskSnapshot }>();
   private static async installPackage(
     absolutePackagePath: string,
     onStream: (data: string) => void,
@@ -124,8 +135,11 @@ export default class Builder {
     this.currentTask = task;
     try {
       const { repository, packages, commits } = this.prepare(task);
-      Snapshot.take(
+
+      this.mitt.emit(
+        "snapshot",
         cloneObj({
+          id: getRandomString(),
           task,
           status: "pending",
           packages,
@@ -152,8 +166,10 @@ export default class Builder {
           item.logs = err as ExecLog | Error;
           continue;
         } finally {
-          Snapshot.take(
+          this.mitt.emit(
+            "snapshot",
             cloneObj({
+              id: getRandomString(),
               task,
               status: "pending",
               packages,
@@ -164,8 +180,10 @@ export default class Builder {
           await this.checkRepositoryDirty(repository);
         }
       }
-      Snapshot.take(
+      this.mitt.emit(
+        "snapshot",
         cloneObj({
+          id: getRandomString(),
           task,
           status: "resolved",
           packages,
@@ -174,7 +192,8 @@ export default class Builder {
         }),
       );
     } catch (err) {
-      Snapshot.take({
+      this.mitt.emit("snapshot", {
+        id: getRandomString(),
         task: task,
         status: "rejected",
         message: (err as Error).message,
