@@ -3,13 +3,11 @@
 
 import { render } from "preact-render-to-string";
 import Index from "./ui/index.server.tsx";
-import Hub from "./ui/hub.server.tsx";
 import Dispatcher from "./Dispatcher.ts";
 import { getRandomString } from "./util.ts";
-import Notify from "./Notify.ts";
-import type { Task, TaskState } from "./type.ts";
-import HubHandler from "./HubHandler.ts";
+import type { Task } from "./type.ts";
 import Builder from "./Builder.ts";
+import TaskSnapshot from "./TaskSnapshot.ts";
 
 export default async function server(req: Request) {
   const { pathname } = new URL(req.url);
@@ -25,15 +23,15 @@ export default async function server(req: Request) {
       const { socket, response } = Deno.upgradeWebSocket(req);
       socket.addEventListener("open", () => {
         console.log("a client connected!");
-        Notify.mitt.on(
-          "message",
+        TaskSnapshot.mitt.on(
+          "snapshot",
           (message) =>
-            socket.send(JSON.stringify({ type: "notify", data: message })),
+            socket.send(JSON.stringify({ type: "snapshot", data: message })),
         );
         Builder.mitt.on(
-          "data",
+          "stream",
           (message) =>
-            socket.send(JSON.stringify({ type: "builder", data: message })),
+            socket.send(JSON.stringify({ type: "stream", data: message })),
         );
       });
       socket.addEventListener("message", (event) => {
@@ -56,36 +54,10 @@ export default async function server(req: Request) {
         headers: { "content-type": "application/json; charset=UTF-8" },
       });
 
-    case "GET /messages":
-      return new Response(JSON.stringify(Notify.messages), {
+    case "GET /snapshots":
+      return new Response(JSON.stringify(TaskSnapshot.snapshots), {
         headers: { "content-type": "application/json; charset=UTF-8" },
       });
-
-    case "GET /hub": {
-      if (req.headers.get("upgrade") !== "websocket") {
-        return new Response(render(<Hub />), {
-          headers: { "content-type": "text/html; charset=UTF-8" },
-        });
-      }
-
-      const { socket, response } = Deno.upgradeWebSocket(req);
-      socket.addEventListener("open", () => {
-        console.log("a client connected!");
-        HubHandler.mitt.on("message", (message) => {
-          socket.send(JSON.stringify(message));
-        });
-      });
-      socket.addEventListener("message", (event) => {
-        if (event.data === "ping") socket.send("pong");
-      });
-      return response;
-    }
-
-    case "POST /hub": {
-      const data = await req.json() as TaskState;
-      HubHandler.register(data);
-      return new Response(null, { status: 200 });
-    }
 
     default:
       return new Response("Not Found", { status: 404 });

@@ -2,7 +2,7 @@
 /** @jsxImportSource preact */
 
 import { render } from "preact";
-import { useMessages, useWorkspace } from "../../service/index.ts";
+import { useSnapshots, useWorkspace } from "../../service/index.ts";
 import Task from "../../components/Task.tsx";
 
 function Workspace() {
@@ -69,7 +69,7 @@ function Workspace() {
 // TODO: 待处理任务列表
 
 function TaskList() {
-  const messages = useMessages("/messages");
+  const messages = useSnapshots("/snapshots");
   const group = Object.values(
     Object.groupBy(messages, (message) => message.task.id),
   );

@@ -34,13 +34,13 @@ var Socket = class {
     });
   }
 };
-function useMessages(channel) {
-  const [messages, setMessages] = useState([]);
+function useSnapshots(channel) {
+  const [snapshots, setSnapshots] = useState([]);
   useEffect(() => {
-    fetch(channel).then((res) => res.json()).then(setMessages).then(
+    fetch(channel).then((res) => res.json()).then(setSnapshots).then(
       () => {
         Socket.mitt.on("data", (data) => {
-          if (data.type === "notify") {
+          if (data.type === "snapshot") {
             notifyMe(
               {
                 pending: "\u5F00\u59CB\u5904\u7406",
@@ -48,24 +48,28 @@ function useMessages(channel) {
                 rejected: "\u5904\u7406\u5931\u8D25"
               }[data.data.status]
             );
-            setMessages((messages2) => [...messages2, data.data]);
+            setSnapshots((messages) => [...messages, data.data]);
           }
         });
       }
     );
   }, [channel]);
-  return messages;
+  return snapshots;
 }
 
 // ui/src/components/Task.tsx
 import { useEffect as useEffect2, useState as useState2 } from "preact/hooks";
 import { Fragment, jsx, jsxs } from "preact/jsx-runtime";
 function Task(props) {
-  const [taskState] = props.states.sort((a) => a.status === "pending" ? 1 : -1);
+  const [taskState] = props.states.sort((a, b) => {
+    const value = b.timestamp - a.timestamp;
+    if (value !== 0) return value;
+    return a.status === "pending" ? 1 : -1;
+  });
   const [streamData, setStreamData] = useState2([]);
   useEffect2(() => {
     Socket.mitt.on("data", (data) => {
-      if (data.type === "builder") {
+      if (data.type === "stream") {
         if (data.data.task.id === taskState.task.id) {
           setStreamData((value) => [...value, data.data]);
         }
@@ -86,8 +90,8 @@ function Task(props) {
           "div",
           {
             className: `chat-bubble min-w-80 relative chat-bubble-${{
-              pending: "",
-              resolved: "success",
+              pending: "neutral",
+              resolved: "primary",
               rejected: "error"
             }[taskState.status]}`,
             children: [
@@ -109,11 +113,11 @@ function Task(props) {
                     (item) => item.packagePath === packageItem.path
                   );
                   return /* @__PURE__ */ jsxs(Fragment, { children: [
-                    /* @__PURE__ */ jsxs("li", { children: [
+                    /* @__PURE__ */ jsxs("li", { className: "text-sm", children: [
                       {
-                        pending: "\u2726",
-                        rejected: "\u2717",
-                        resolved: "\u2713"
+                        pending: /* @__PURE__ */ jsx("span", { className: "text-warning", children: "-" }),
+                        rejected: /* @__PURE__ */ jsx("span", { className: "text-error", children: "\u2717" }),
+                        resolved: /* @__PURE__ */ jsx("span", { className: "text-success", children: "\u2713" })
                       }[packageItem.status],
                       " ",
                       packageItem.path
@@ -229,7 +233,7 @@ function Workspace() {
   }) });
 }
 function TaskList() {
-  const messages = useMessages("/messages");
+  const messages = useSnapshots("/snapshots");
   const group = Object.values(
     Object.groupBy(messages, (message) => message.task.id)
   );

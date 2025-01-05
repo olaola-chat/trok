@@ -8,12 +8,16 @@ import { Socket } from "../service/index.ts";
 export default function Task(props: {
   states: TaskState[];
 }) {
-  const [taskState] = props.states.sort((a) => a.status === "pending" ? 1 : -1);
+  const [taskState] = props.states.sort((a, b) => {
+    const value = b.timestamp - a.timestamp;
+    if (value !== 0) return value;
+    return a.status === "pending" ? 1 : -1;
+  });
   const [streamData, setStreamData] = useState<StreamData[]>([]);
 
   useEffect(() => {
     Socket.mitt.on("data", (data) => {
-      if (data.type === "builder") {
+      if (data.type === "stream") {
         if (data.data.task.id === taskState.task.id) {
           setStreamData((value) => [...value, data.data]);
         }
@@ -36,7 +40,7 @@ export default function Task(props: {
         <div
           className={`chat-bubble min-w-80 relative chat-bubble-${
             {
-              pending: "",
+              pending: "neutral",
               resolved: "success",
               rejected: "error",
             }[taskState.status]
@@ -71,11 +75,11 @@ export default function Task(props: {
 
                     return (
                       <>
-                        <li>
+                        <li className="text-sm">
                           {{
-                            pending: "✦",
-                            rejected: "✗",
-                            resolved: "✓",
+                            pending: <span className="text-warning">-</span>,
+                            rejected: <span className="text-error">✗</span>,
+                            resolved: <span className="text-primary">✓</span>,
                           }[packageItem.status]} {packageItem.path}
                         </li>
                         {packageStream.length > 0 &&

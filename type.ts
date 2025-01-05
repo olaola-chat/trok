@@ -40,10 +40,10 @@ export type TaskState = {
 };
 
 export type SocketData = {
-  type: "notify";
+  type: "snapshot";
   data: TaskState;
 } | {
-  type: "builder";
+  type: "stream";
   data: StreamData;
 };
 

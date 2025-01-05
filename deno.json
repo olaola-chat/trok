@@ -12,9 +12,8 @@
   },
 
   "tasks": {
-    "buildUI": "deno run buildIndexUI && deno run buildHubUI",
-    "buildIndexUI": "esbuild ui/src/pages/index/index.tsx --external:preact --bundle --format=esm --outfile=ui/dist/index.js.txt",
-    "buildHubUI": "esbuild ui/src/pages/hub/index.tsx --external:preact --bundle --format=esm --outfile=ui/dist/hub.js.txt"
+    "buildUI": "rm -rf ./ui/dist && deno run buildIndexUI",
+    "buildIndexUI": "esbuild ui/src/pages/index/index.tsx --external:preact --bundle --format=esm --outfile=ui/dist/index.js.txt"
   },
 
   "fmt": {

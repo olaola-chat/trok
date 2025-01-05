@@ -6,7 +6,7 @@ import findGitRepositories from "./findGitRepositories.ts";
 import getPackageManager from "./getPackageManager.ts";
 import { cloneObj, getCommits, isSameGitOrigin } from "./util.ts";
 import { resolve } from "@std/path/resolve";
-import Notify from "./Notify.ts";
+import TaskSnapshot from "./TaskSnapshot.ts";
 
 const dir = resolve(Deno.cwd(), "..", "ola");
 
@@ -15,7 +15,7 @@ export default class Builder {
 
   static currentTask: Task | null = null;
 
-  static mitt = mitt<{ data: StreamData }>();
+  static mitt = mitt<{ stream: StreamData }>();
   private static async installPackage(
     absolutePackagePath: string,
     onStream: (data: string) => void,
@@ -124,36 +124,61 @@ export default class Builder {
     this.currentTask = task;
     try {
       const { repository, packages, commits } = this.prepare(task);
-      Notify.register(cloneObj({ task, status: "pending", packages, commits }));
+      TaskSnapshot.take(
+        cloneObj({
+          task,
+          status: "pending",
+          packages,
+          commits,
+          timestamp: Date.now(),
+        }),
+      );
       for (const item of packages) {
         const packagePath = join(repository.path, item.path);
         try {
           await this.installPackage(
             packagePath,
             (data) =>
-              this.mitt.emit("data", { task, data, packagePath: item.path }),
+              this.mitt.emit("stream", { task, data, packagePath: item.path }),
           );
           await this.buildPackage(
             packagePath,
             (data) =>
-              this.mitt.emit("data", { task, data, packagePath: item.path }),
+              this.mitt.emit("stream", { task, data, packagePath: item.path }),
           );
           item.status = "resolved";
         } catch (err) {
           item.status = "rejected";
           item.logs = err as ExecLog | Error;
           continue;
+        } finally {
+          TaskSnapshot.take(
+            cloneObj({
+              task,
+              status: "pending",
+              packages,
+              commits,
+              timestamp: Date.now(),
+            }),
+          );
+          await this.checkRepositoryDirty(repository);
         }
-        await this.checkRepositoryDirty(repository);
       }
-      Notify.register(
-        cloneObj({ task, status: "resolved", packages, commits }),
+      TaskSnapshot.take(
+        cloneObj({
+          task,
+          status: "resolved",
+          packages,
+          commits,
+          timestamp: Date.now(),
+        }),
       );
     } catch (err) {
-      Notify.register({
+      TaskSnapshot.take({
         task: task,
         status: "rejected",
         message: (err as Error).message,
+        timestamp: Date.now(),
       });
     } finally {
       this.currentTask = null;

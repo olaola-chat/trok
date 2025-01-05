@@ -47,13 +47,13 @@ export class Socket {
   }
 }
 
-export function useMessages(channel: "/messages" | "/hub/messages") {
-  const [messages, setMessages] = useState<TaskState[]>([]);
+export function useSnapshots(channel: "/snapshots" | "/hub/snapshots") {
+  const [snapshots, setSnapshots] = useState<TaskState[]>([]);
   useEffect(() => {
-    fetch(channel).then((res) => res.json()).then(setMessages).then(
+    fetch(channel).then((res) => res.json()).then(setSnapshots).then(
       () => {
         Socket.mitt.on("data", (data) => {
-          if (data.type === "notify") {
+          if (data.type === "snapshot") {
             notifyMe(
               {
                 pending: "开始处理",
@@ -61,11 +61,11 @@ export function useMessages(channel: "/messages" | "/hub/messages") {
                 rejected: "处理失败",
               }[data.data.status],
             );
-            setMessages((messages) => [...messages, data.data]);
+            setSnapshots((messages) => [...messages, data.data]);
           }
         });
       },
     );
   }, [channel]);
-  return messages;
+  return snapshots;
 }

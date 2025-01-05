@@ -52,10 +52,11 @@ export function getCommits(repositoryPath: string, selector: string) {
 
 export function getConfig(): Config {
   const configPath = resolve(Deno.cwd() as string, "tork.config.json");
+
   if (isFileExistSync(configPath)) {
-    const text = Deno.readTextFileSync(configPath);
-    return JSON.parse(text) as Config;
+    return JSON.parse(Deno.readTextFileSync(configPath)) as Config;
   }
+
   return {};
 }
 
