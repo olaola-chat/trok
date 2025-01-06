@@ -1,13 +1,5 @@
-import mitt from "https://esm.sh/mitt@3.0.1";
 import { join } from "@std/path/join";
-import type {
-  ExecLog,
-  Package,
-  Repository,
-  StreamData,
-  Task,
-  TaskSnapshot,
-} from "./type.ts";
+import type { ExecLog, Package, Repository, Task } from "./type.ts";
 import filterPackages from "./filterPackages.ts";
 import findGitRepositories from "./findGitRepositories.ts";
 import getPackageManager from "./getPackageManager.ts";
@@ -18,15 +10,17 @@ import {
   isSameGitOrigin,
 } from "./util.ts";
 import { resolve } from "@std/path/resolve";
+import Notify from "./Notify.ts";
 
 const dir = resolve(Deno.cwd(), "..", "ola");
 
 export default class Builder {
   static workspace = findGitRepositories(dir);
 
+  static notify = new Notify();
+
   static currentTask: Task | null = null;
 
-  static mitt = mitt<{ stream: StreamData; snapshot: TaskSnapshot }>();
   private static async installPackage(
     absolutePackagePath: string,
     onStream: (data: string) => void,
@@ -136,9 +130,9 @@ export default class Builder {
     try {
       const { repository, packages, commits } = this.prepare(task);
 
-      this.mitt.emit(
-        "snapshot",
-        cloneObj({
+      Notify.notify({
+        type: "snapshot",
+        data: cloneObj({
           id: getRandomString(),
           task,
           status: "pending",
@@ -146,19 +140,26 @@ export default class Builder {
           commits,
           timestamp: Date.now(),
         }),
-      );
+      });
+
       for (const item of packages) {
         const packagePath = join(repository.path, item.path);
         try {
           await this.installPackage(
             packagePath,
             (data) =>
-              this.mitt.emit("stream", { task, data, packagePath: item.path }),
+              Notify.notify({
+                type: "stream",
+                data: { task, data, packagePath: item.path },
+              }),
           );
           await this.buildPackage(
             packagePath,
             (data) =>
-              this.mitt.emit("stream", { task, data, packagePath: item.path }),
+              Notify.notify({
+                type: "stream",
+                data: { task, data, packagePath: item.path },
+              }),
           );
           item.status = "resolved";
         } catch (err) {
@@ -166,9 +167,9 @@ export default class Builder {
           item.logs = err as ExecLog | Error;
           continue;
         } finally {
-          this.mitt.emit(
-            "snapshot",
-            cloneObj({
+          Notify.notify({
+            type: "snapshot",
+            data: cloneObj({
               id: getRandomString(),
               task,
               status: "pending",
@@ -176,13 +177,13 @@ export default class Builder {
               commits,
               timestamp: Date.now(),
             }),
-          );
+          });
           await this.checkRepositoryDirty(repository);
         }
       }
-      this.mitt.emit(
-        "snapshot",
-        cloneObj({
+      Notify.notify({
+        type: "snapshot",
+        data: cloneObj({
           id: getRandomString(),
           task,
           status: "resolved",
@@ -190,14 +191,17 @@ export default class Builder {
           commits,
           timestamp: Date.now(),
         }),
-      );
+      });
     } catch (err) {
-      this.mitt.emit("snapshot", {
-        id: getRandomString(),
-        task: task,
-        status: "rejected",
-        message: (err as Error).message,
-        timestamp: Date.now(),
+      Notify.notify({
+        type: "snapshot",
+        data: {
+          id: getRandomString(),
+          task: task,
+          status: "rejected",
+          message: (err as Error).message,
+          timestamp: Date.now(),
+        },
       });
     } finally {
       this.currentTask = null;

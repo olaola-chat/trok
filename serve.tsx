@@ -8,6 +8,7 @@ import { getRandomString } from "./util.ts";
 import type { SocketData, Task } from "./type.ts";
 import Builder from "./Builder.ts";
 import Hub from "./Hub.ts";
+import Configiration from "./Configration.ts";
 
 function html(data: string) {
   return new Response(data, {
@@ -21,7 +22,7 @@ function json(data: object) {
   });
 }
 
-export default async function server(req: Request) {
+async function server(req: Request) {
   const { pathname } = new URL(req.url);
 
   switch (`${req.method} ${pathname}`) {
@@ -38,7 +39,7 @@ export default async function server(req: Request) {
         (e) => {
           const data = JSON.parse(e.data) as SocketData;
           if (data.type === "snapshot") {
-            Hub.snapshots.push(data.data);
+            Hub.registry(data.data);
             Hub.mitt.emit("snapshot", data.data);
           }
           if (data.type === "stream") {
@@ -84,5 +85,12 @@ export default async function server(req: Request) {
 
     default:
       return new Response("Not Found", { status: 404 });
+  }
+}
+
+export default function serve(port?: number) {
+  const { addr } = Deno.serve({ port, hostname: "127.0.0.1" }, server);
+  if (!Configiration.notify) {
+    Configiration.notify = `ws://${addr.hostname}:${addr.port}`;
   }
 }

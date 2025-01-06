@@ -103,7 +103,7 @@ function Main() {
   }, []);
 
   return (
-    <div className="flex gap-2 ">
+    <div className="flex gap-2 w-screen">
       <div className="p-2 bg-base-200 h-screen overflow-y-scroll w-96">
         <Workspace
           onCreateTask={async (origin, branch, selector) => {
@@ -119,7 +119,7 @@ function Main() {
           }}
         />
       </div>
-      <div className="p-2 h-screen overflow-y-scroll w-max">
+      <div className="p-2 h-screen overflow-y-scroll grow">
         {snapShotGroups.map((item) => <TaskState snapshots={item!} />)}
       </div>
       <TaskList tasks={tasks} />
