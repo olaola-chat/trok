@@ -1,5 +1,5 @@
+import mitt from "./mitt.ts";
 import type { StreamData, TaskSnapshot } from "./type.ts";
-import mitt from "https://esm.sh/mitt@3.0.1";
 
 export default abstract class Hub {
   static mitt = mitt<{ snapshot: TaskSnapshot; stream: StreamData }>();

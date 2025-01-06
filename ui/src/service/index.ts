@@ -5,7 +5,7 @@ import type {
   Task,
   TaskSnapshot,
 } from "../../../lib/type.ts";
-import mitt from "https://esm.sh/mitt@3.0.1";
+import mitt from "../../../lib/mitt.ts";
 
 function notifyMe(message: string) {
   if (!("Notification" in window)) alert("当前浏览器不支持桌面通知");

@@ -15,7 +15,6 @@ const importMap = {
   "imports": {
     "preact": "https://esm.sh/preact@10.23.1",
     "preact/": "https://esm.sh/preact@10.23.1/",
-    "mitt": "https://esm.sh/mitt@3.0.1",
   },
 };
 
