@@ -33,7 +33,7 @@ export default class Builder {
 
   static currentTask: Task | null = null;
 
-  static notifyClient: NotifyClient;
+  private static notifyClient: NotifyClient;
 
   private static getChangedPackages(
     repository: Repository,

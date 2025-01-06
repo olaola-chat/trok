@@ -119,7 +119,10 @@ function Main() {
           }}
         />
       </div>
-      <div className="p-2 h-screen overflow-y-scroll grow">
+      <div
+        className="p-2 h-screen overflow-y-scroll grow"
+        ref={(el) => el?.scrollTo(0, el.scrollHeight)}
+      >
         {snapShotGroups.map((item) => <TaskState snapshots={item!} />)}
       </div>
       <TaskList tasks={tasks} />
