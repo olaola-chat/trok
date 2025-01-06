@@ -10,7 +10,7 @@ const [command] = args._;
 if (command === "serve") serve(args.port ?? 8000);
 if (command === "build") {
   const [{ origin, branch }] = Builder.workspace;
-  Builder.run({
+  await Builder.run({
     id: getRandomString(),
     origin: args.origin ?? origin,
     branch: args.branch ?? branch,
