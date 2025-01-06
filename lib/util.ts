@@ -1,3 +1,4 @@
+import os from "node:os";
 import { join } from "@std/path/join";
 import type { Config } from "./type.ts";
 import { resolve } from "@std/path/resolve";
@@ -157,11 +158,7 @@ export async function streamExec(
   },
 ) {
   const abortController = new AbortController();
-  // 5分钟超时
-  const timer = setTimeout(
-    () => abortController.abort("timeout"),
-    options.timeout ?? 5 * 60 * 1000,
-  );
+
   const process = new Deno.Command(command, {
     cwd: options.cwd,
     args: options.args,
@@ -170,28 +167,42 @@ export async function streamExec(
     stdout: "piped",
   }).spawn();
 
-  const decoder = new TextDecoder();
-  let stdout = "";
-  let stderr = "";
-  while (true) {
-    const [outRes, errRes] = await Promise.all([
-      process.stdout.getReader().read(),
-      process.stderr.getReader().read(),
-    ]);
+  // 5分钟超时
+  const timer = setTimeout(
+    // FIXME: abort后进程并未终止，不知道是否是deno的bug
+    () => abortController.abort(),
+    options.timeout ?? 5 * 60 * 1000,
+  );
 
-    const outData = decoder.decode(outRes.value);
-    const errData = decoder.decode(errRes.value);
-    stdout += outData;
-    stderr += errData;
-    if (outData) options.onStreamData(outData);
-    if (errData) options.onStreamData(decoder.decode(errRes.value));
-    const done = [outRes, errRes].every((item) => item.done);
-    if (done) break;
-  }
+  options.onStreamData(
+    `${os.userInfo().username}@${Deno.hostname()}:${options.cwd}$ ${command} ${
+      options.args?.join(" ")
+    }\n`,
+  );
 
-  const { success, signal } = await process.status.finally(() => {
-    clearTimeout(timer);
-  });
+  const [stdout, stderr, { success, signal }] = await Promise.all([
+    readStream(process.stdout, options.onStreamData),
+    readStream(process.stderr, options.onStreamData),
+    process.status,
+  ]).finally(() => clearTimeout(timer));
   if (!success) throw { stderr, stdout, signal };
   return { stderr, stdout };
+}
+
+async function readStream(
+  stream: ReadableStream<Uint8Array>,
+  onStreamData: (data: string) => void,
+) {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let data = "";
+  while (true) {
+    const { value, done } = await reader.read();
+    const streamData = decoder.decode(value);
+    data += streamData;
+    console.log(streamData);
+    onStreamData(streamData);
+    if (done) break;
+  }
+  return data;
 }

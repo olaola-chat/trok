@@ -101,7 +101,9 @@ export default abstract class Builder {
     const packageManager = getPackageManager(absolutePackagePath);
     await streamExec(packageManager, {
       cwd: absolutePackagePath,
-      args: [packageManager === "npm" ? "ci" : "--frozen-lockfile", "install"],
+      args: packageManager === "npm"
+        ? ["ci"]
+        : ["install", "--frozen-lockfile"],
       onStreamData: (data) => {
         this.notifyClient.notify(
           stream({ task: this.currentTask!, data, packagePath }),
