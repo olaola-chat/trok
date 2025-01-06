@@ -9,13 +9,10 @@ import {
   getRandomString,
   isSameGitOrigin,
 } from "./util.ts";
-import { resolve } from "@std/path/resolve";
 import Notify from "./Notify.ts";
 
-const dir = resolve(Deno.cwd(), "..", "ola");
-
 export default class Builder {
-  static workspace = findGitRepositories(dir);
+  static workspace = findGitRepositories(Deno.cwd());
 
   static notify = new Notify();
 
