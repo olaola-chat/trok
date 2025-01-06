@@ -1,7 +1,7 @@
 import { parseArgs } from "@std/cli/parse-args";
-import Builder from "./Builder.ts";
-import serve from "./serve.tsx";
-import { getRandomString } from "./util.ts";
+import Builder from "./lib/Builder.ts";
+import serve from "./lib/serve.tsx";
+import { getRandomString } from "./lib/util.ts";
 
 const args = parseArgs(Deno.args);
 

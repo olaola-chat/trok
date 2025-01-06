@@ -2,7 +2,7 @@
 /** @jsxImportSource preact */
 
 import { render } from "preact-render-to-string";
-import Index from "./ui/index.server.tsx";
+import Index from "../ui/index.server.tsx";
 import Dispatcher from "./Dispatcher.ts";
 import { getRandomString } from "./util.ts";
 import type { SocketData, Task } from "./type.ts";

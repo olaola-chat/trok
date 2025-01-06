@@ -5,7 +5,7 @@ import { render } from "preact";
 import { Socket, useTasks, useWorkspace } from "../../service/index.ts";
 import { useEffect } from "preact/hooks";
 import { useHub } from "../../service/index.ts";
-import type { Task } from "../../../../type.ts";
+import type { Task } from "../../../../lib/type.ts";
 import TaskState from "../../components/TaskState.tsx";
 
 function Workspace(

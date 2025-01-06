@@ -2,7 +2,7 @@
 /** @jsxImportSource preact */
 
 import { useEffect, useState } from "preact/hooks";
-import type { StreamData, TaskSnapshot } from "../../../type.ts";
+import type { StreamData, TaskSnapshot } from "../../../lib/type.ts";
 import { Socket } from "../service/index.ts";
 
 export default function TaskState(props: {

@@ -4,7 +4,7 @@ import type {
   SocketData,
   Task,
   TaskSnapshot,
-} from "../../../type.ts";
+} from "../../../lib/type.ts";
 import mitt from "https://esm.sh/mitt@3.0.1";
 
 function notifyMe(message: string) {

@@ -1,6 +1,6 @@
 {
   "name": "@trok/trok",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "license": "MIT",
   "exports": "./mod.ts",
   "imports": {
@@ -12,8 +12,7 @@
   },
 
   "tasks": {
-    "buildUI": "rm -rf ./ui/dist && deno run buildIndexUI",
-    "buildIndexUI": "esbuild ui/src/pages/index/index.tsx --external:preact --bundle --format=esm --outfile=ui/dist/index.js.txt"
+    "buildUI": "rm -rf ./ui/dist && esbuild ui/src/pages/index/index.tsx --external:preact --bundle --format=esm --outfile=ui/dist/index.js.txt"
   },
 
   "fmt": {
