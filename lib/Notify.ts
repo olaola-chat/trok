@@ -24,14 +24,14 @@ export default class Notify {
 
     if (!this.socket) {
       await sleep(500);
-      this.notify(message);
+      await this.notify(message);
       return;
     }
 
     if (this.socket.readyState === this.socket.CLOSED) {
       await sleep(500);
       this.socket = new WebSocket(Configiration.notify);
-      this.notify(message);
+      await this.notify(message);
       return;
     }
 
@@ -40,7 +40,7 @@ export default class Notify {
       this.socket.readyState === WebSocket.CONNECTING
     ) {
       await sleep(500);
-      this.notify(message);
+      await this.notify(message);
     }
 
     if (this.socket.readyState === this.socket.OPEN) {
@@ -48,3 +48,5 @@ export default class Notify {
     }
   }
 }
+
+Notify.setup();

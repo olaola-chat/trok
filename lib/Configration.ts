@@ -4,7 +4,7 @@ import { isFileExistSync } from "./util.ts";
 import Notify from "./Notify.ts";
 
 export default abstract class Configiration {
-  static configPath = resolve(Deno.cwd() as string, "tork.config.json");
+  static configPath = resolve(Deno.cwd() as string, "trok.config.json");
 
   private static get fileConfig() {
     return isFileExistSync(this.configPath)

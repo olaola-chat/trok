@@ -10,6 +10,7 @@ const lockfileMap = {
   npm: "package-lock.json",
   yarn: "yarn.lock",
   bun: "bun.lockb",
+  deno: "deno.lock",
 };
 
 export default function getPackageManager(packagePath: string) {
