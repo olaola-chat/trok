@@ -174,8 +174,9 @@ export default class Builder {
           await this.buildPackage(repository, item.path);
           item.status = "resolved";
         } catch (err) {
+          const logs = err instanceof Error ? err.message : err as ExecLog;
           item.status = "rejected";
-          item.logs = err as ExecLog | Error;
+          item.logs = logs;
           continue;
         } finally {
           notifySnapshot({ task, status: "pending", packages, commits });
@@ -184,7 +185,7 @@ export default class Builder {
       }
       notifySnapshot({ task, status: "resolved", packages, commits });
     } catch (err) {
-      const logs = err as ExecLog | Error;
+      const logs = err instanceof Error ? err.message : err as ExecLog;
       notifySnapshot({ task: task, status: "rejected", logs: logs });
     } finally {
       this.currentTask = null;

@@ -5,37 +5,30 @@ import { useEffect, useState } from "preact/hooks";
 import type { ExecLog, StreamData, TaskSnapshot } from "../../../lib/type.ts";
 import { Socket } from "../service/index.ts";
 
-function Logs(props: { logs: Error | ExecLog }) {
+function Code(
+  props: {
+    children: string;
+    theme: "error" | "info" | "primary";
+    title?: string;
+  },
+) {
   return (
-    <div className="text-xs">
-      {props.logs instanceof Error
-        ? (
-          <pre className="bg-error-content rounded text-error p-2 my-2 overflow-x-scroll max-h-80 max-w-5xl">
-          {props.logs}
-          </pre>
-        )
-        : (
-          <>
-            <pre
-              title="stdout"
-              className="overflow-x-scroll bg-info-content rounded text-info p-2 my-2 max-h-80 max-w-5xl"
-              ref={(el) => el?.scrollTo(0, el.scrollHeight)}
-            >
-            <code>{props.logs.stdout}</code>
-            </pre>
-            <pre title="signal" class="bg-primary-content">
-            {props.logs.signal}
-            </pre>
-            <pre
-              title="stderr"
-              className="overflow-x-scroll bg-error-content rounded text-error p-2 my-2 max-h-80 max-w-5xl"
-              ref={(el) => el?.scrollTo(0, el.scrollHeight)}
-            >
-            <code>{props.logs.stderr}</code>
-            </pre>
-          </>
-        )}
-    </div>
+    <pre
+      title={props.title}
+      className={`text-xs overflow-x-scroll bg-${props.theme}-content rounded text-${props.theme} p-2 my-2 max-h-80 max-w-5xl`}
+      ref={(el) => el?.scrollTo(0, el.scrollHeight)}
+    ><code>{props.children}</code></pre>
+  );
+}
+
+function Logs(props: { logs: ExecLog | string }) {
+  if (typeof props.logs === "string") return props.logs;
+  return (
+    <>
+      <Code title="stdout" theme="info">{props.logs.stdout}</Code>
+      {/* {props.logs.signal} */}
+      <Code title="stderr" theme="error">{props.logs.stderr}</Code>
+    </>
   );
 }
 
@@ -91,17 +84,11 @@ export default function TaskState(props: { snapshots: TaskSnapshot[] }) {
 
           {streamData.filter((item) => !item.packagePath).length > 0 &&
             taskState.status === "pending" && (
-            <pre
-              title="stream"
-              className="overflow-x-scroll bg-secondary-content rounded text-info p-2 my-2 max-h-80 max-w-5xl"
-              ref={(el) => el?.scrollTo(0, el.scrollHeight)}
-            >
-                <code>
-                  {streamData
-                    .filter((item) => !item.packagePath)
-                    .map((item) => item.data)}
-                </code>
-            </pre>
+            <Code title="stream" theme="info">
+              {streamData
+                .filter((item) => !item.packagePath)
+                .map((item) => item.data).join("")}
+            </Code>
           )}
 
           {taskState.packages?.length
@@ -114,30 +101,26 @@ export default function TaskState(props: { snapshots: TaskSnapshot[] }) {
                       (item) => item.packagePath === packageItem.path,
                     );
 
+                    const pending = packageStream.length
+                      ? (
+                        <span className="loading loading-spinner text-warning loading-xs" />
+                      )
+                      : <span className="text-warning">-</span>;
+
+                    const rejected = <span className="text-error">✗</span>;
+                    const resolved = <span className="text-primary">✓</span>;
+
                     return (
                       <>
                         <li className="text-sm flex items-center gap-2">
-                          {{
-                            pending: packageStream.length
-                              ? (
-                                <span className="loading loading-spinner text-warning loading-xs" />
-                              )
-                              : <span className="text-warning">-</span>,
-                            rejected: <span className="text-error">✗</span>,
-                            resolved: <span className="text-primary">✓</span>,
-                          }[packageItem.status]} {packageItem.path}
+                          {{ pending, rejected, resolved }[packageItem.status]}
+                          {packageItem.path}
                         </li>
                         {packageStream.length > 0 &&
                           packageItem.status === "pending" && (
-                          <pre
-                            title="stream"
-                            className="overflow-x-scroll bg-secondary-content rounded text-info p-2 my-2 max-h-80 max-w-5xl"
-                            ref={(el) => el?.scrollTo(0, el.scrollHeight)}
-                          >
-                            <code>
-                              {packageStream.map((item) => item.data)}
-                            </code>
-                          </pre>
+                          <Code theme="info">
+                            {packageStream.map((item) => item.data).join("")}
+                          </Code>
                         )}
                         {packageItem.logs && <Logs logs={packageItem.logs} />}
                       </>

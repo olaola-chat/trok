@@ -27,7 +27,7 @@ export type ExecLog = {
 export type Package = {
   path: string;
   status: "pending" | "resolved" | "rejected";
-  logs?: ExecLog | Error;
+  logs?: ExecLog | string;
 };
 
 export type TaskSnapshot = {
@@ -36,7 +36,7 @@ export type TaskSnapshot = {
   status: "pending" | "resolved" | "rejected";
   commits?: string[];
   packages?: Package[];
-  logs?: ExecLog | Error;
+  logs?: ExecLog | string;
 };
 
 export type SocketData = {
