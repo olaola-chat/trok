@@ -146,3 +146,52 @@ export function getPackageManager(packagePath: string) {
   const [{ pkgManager }] = lockfilesExist;
   return pkgManagerWrapper(pkgManager);
 }
+
+export async function streamExec(
+  command: string | URL,
+  options: {
+    onStreamData: (data: string) => void;
+    cwd?: Deno.CommandOptions["cwd"];
+    args?: string[];
+    timeout?: number;
+  },
+) {
+  const abortController = new AbortController();
+  // 5分钟超时
+  const timer = setTimeout(
+    () => abortController.abort("timeout"),
+    options.timeout ?? 5 * 60 * 1000,
+  );
+  const process = new Deno.Command(command, {
+    cwd: options.cwd,
+    args: options.args,
+    signal: abortController.signal,
+    stderr: "piped",
+    stdout: "piped",
+  }).spawn();
+
+  const decoder = new TextDecoder();
+  let stdout = "";
+  let stderr = "";
+  while (true) {
+    const [outRes, errRes] = await Promise.all([
+      process.stdout.getReader().read(),
+      process.stderr.getReader().read(),
+    ]);
+
+    const outData = decoder.decode(outRes.value);
+    const errData = decoder.decode(errRes.value);
+    stdout += outData;
+    stderr += errData;
+    if (outData) options.onStreamData(outData);
+    if (errData) options.onStreamData(decoder.decode(errRes.value));
+    const done = [outRes, errRes].every((item) => item.done);
+    if (done) break;
+  }
+
+  const { success, signal } = await process.status.finally(() => {
+    clearTimeout(timer);
+  });
+  if (!success) throw { stderr, stdout, signal };
+  return { stderr, stdout };
+}
