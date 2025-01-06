@@ -318,7 +318,14 @@ function Main() {
         }
       }
     ) }),
-    /* @__PURE__ */ jsx2("div", { className: "p-2 h-screen overflow-y-scroll grow", children: snapShotGroups.map((item) => /* @__PURE__ */ jsx2(TaskState, { snapshots: item })) }),
+    /* @__PURE__ */ jsx2(
+      "div",
+      {
+        className: "p-2 h-screen overflow-y-scroll grow",
+        ref: (el) => el?.scrollTo(0, el.scrollHeight),
+        children: snapShotGroups.map((item) => /* @__PURE__ */ jsx2(TaskState, { snapshots: item }))
+      }
+    ),
     /* @__PURE__ */ jsx2(TaskList, { tasks })
   ] });
 }

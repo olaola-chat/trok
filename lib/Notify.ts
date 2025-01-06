@@ -44,6 +44,10 @@ export default class Notify {
           });
         });
         socket.addEventListener("close", (e) => {
+          /**
+           * right now, e.code always 1005
+           * @see https://github.com/denoland/deno/issues/27566
+           */
           if (e.code !== 1000) reject(e.reason);
         });
       });

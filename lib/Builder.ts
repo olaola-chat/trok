@@ -28,7 +28,7 @@ const stream = (data: StreamData): SocketData => ({
   data: cloneObj(data),
 });
 
-export default class Builder {
+export default abstract class Builder {
   static workspace = this.findGitRepositories(Deno.cwd());
 
   static currentTask: Task | null = null;
@@ -99,7 +99,7 @@ export default class Builder {
     const absolutePackagePath = join(repository.path, packagePath);
     const packageManager = getPackageManager(absolutePackagePath);
     const abortController = new AbortController();
-    setTimeout(() => abortController.abort(), 5 * 60 * 1000); // 5分钟超时
+    const timer = setTimeout(() => abortController.abort(), 5 * 60 * 1000); // 5分钟超时
     const process = new Deno.Command(packageManager, {
       cwd: absolutePackagePath,
       args: [packageManager === "npm" ? "ci" : "--frozen-lockfile", "install"],
@@ -124,7 +124,9 @@ export default class Builder {
       );
       stderr += data;
     });
-    const { signal, success } = await process.status;
+    const { signal, success } = await process.status.finally(() =>
+      clearTimeout(timer)
+    );
     if (!success) throw { signal, stdout, stderr };
   }
 
@@ -244,6 +246,7 @@ export default class Builder {
       this.notifyClient.notify(
         snapshot({ task, status: "pending", packages, commits }),
       );
+
       for (const item of packages) {
         try {
           await this.installPackage(repository, item.path);
@@ -261,6 +264,7 @@ export default class Builder {
           await this.checkRepositoryDirty(repository);
         }
       }
+
       this.notifyClient.notify(
         snapshot({ task, status: "resolved", packages, commits }),
       );
