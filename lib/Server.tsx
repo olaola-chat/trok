@@ -8,7 +8,6 @@ import { getRandomString } from "./util.ts";
 import type { SocketData, Task } from "./type.ts";
 import Builder from "./Builder.ts";
 import Hub from "./Hub.ts";
-import Configiration from "./Configration.ts";
 
 function html(data: string) {
   return new Response(data, {
@@ -22,7 +21,7 @@ function json(data: object) {
   });
 }
 
-async function server(req: Request) {
+async function handler(req: Request) {
   const { pathname } = new URL(req.url);
 
   switch (`${req.method} ${pathname}`) {
@@ -88,9 +87,10 @@ async function server(req: Request) {
   }
 }
 
-export default function serve(port?: number) {
-  const { addr } = Deno.serve({ port, hostname: "127.0.0.1" }, server);
-  if (!Configiration.notify) {
-    Configiration.notify = `ws://${addr.hostname}:${addr.port}`;
+export default abstract class Server {
+  static host?: string;
+  static serve(port?: number) {
+    const { addr } = Deno.serve({ port, hostname: "127.0.0.1" }, handler);
+    this.host = `${addr.hostname}:${addr.port}`;
   }
 }

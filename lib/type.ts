@@ -50,4 +50,8 @@ export type SocketData = {
 export type Config = {
   // 通知地址
   notify?: string;
+  users?: {
+    name: string;
+    password: string;
+  }[];
 };

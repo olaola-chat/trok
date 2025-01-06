@@ -3,32 +3,94 @@ import type {
   ExecLog,
   Package,
   Repository,
+  SocketData,
   StreamData,
   Task,
   TaskSnapshot,
 } from "./type.ts";
-import filterPackages from "./filterPackages.ts";
-import findGitRepositories from "./findGitRepositories.ts";
-import getPackageManager from "./getPackageManager.ts";
-import { cloneObj, getCommits, isSameGitOrigin } from "./util.ts";
-import Notify from "./Notify.ts";
+import {
+  cloneObj,
+  findPackages,
+  getCommits,
+  getPackageManager,
+  getRepositoryInfo,
+  isSameGitOrigin,
+} from "./util.ts";
+import Notify, { type NotifyClient } from "./Notify.ts";
 
-const notifySnapshot = (data: Omit<TaskSnapshot, "timestamp">) =>
-  Notify.notify({
-    type: "snapshot",
-    data: cloneObj({ ...data, timestamp: Date.now() }),
-  });
+const snapshot = (data: Omit<TaskSnapshot, "timestamp">): SocketData => ({
+  type: "snapshot",
+  data: cloneObj({ ...data, timestamp: Date.now() }),
+});
 
-const notifyStream = (data: StreamData) =>
-  Notify.notify({
-    type: "stream",
-    data: cloneObj(data),
-  });
+const stream = (data: StreamData): SocketData => ({
+  type: "stream",
+  data: cloneObj(data),
+});
 
 export default class Builder {
-  static workspace = findGitRepositories(Deno.cwd());
+  static workspace = this.findGitRepositories(Deno.cwd());
 
   static currentTask: Task | null = null;
+
+  static notifyClient: NotifyClient;
+
+  private static getChangedPackages(
+    repository: Repository,
+    diffSelector: string,
+  ) {
+    const command = new Deno.Command("git", {
+      args: ["diff", "--name-only", diffSelector],
+      cwd: repository.path,
+    });
+
+    const { code, stdout, stderr } = command.outputSync();
+
+    if (code !== 0) {
+      throw new Error(`git diff failed: ${new TextDecoder().decode(stderr)}`);
+    }
+
+    const changedFiles = new TextDecoder()
+      .decode(stdout)
+      .split("\n")
+      .filter(Boolean);
+
+    const changedPackages = repository.packages.filter((item) =>
+      changedFiles.some((file) => file.startsWith(item.replace("./", "")))
+    );
+
+    return changedPackages;
+  }
+
+  private static filterPackages(repository: Repository, task: Task) {
+    // 路径选择器
+    if (task.selector.startsWith("./")) {
+      return repository.packages.filter((item) => item === task.selector);
+    }
+
+    // git 选择器
+    return this.getChangedPackages(repository, task.selector);
+  }
+
+  private static findGitRepositories(
+    dirPath: string,
+    repositories: Repository[] = [],
+  ) {
+    for (const entity of Deno.readDirSync(dirPath)) {
+      if (!entity.isDirectory) continue;
+      const absolutePath = join(dirPath, entity.name);
+      if (entity.name !== ".git") {
+        this.findGitRepositories(absolutePath, repositories);
+      } else {
+        const { origin, branch } = getRepositoryInfo(dirPath);
+        const packages = findPackages(dirPath).map((item) =>
+          item.replace(dirPath, ".")
+        );
+        repositories.push({ origin, branch, path: dirPath, packages });
+      }
+    }
+    return repositories;
+  }
 
   private static async installPackage(
     repository: Repository,
@@ -50,12 +112,16 @@ export default class Builder {
     let stderr = "";
 
     this.read(process.stdout.getReader(), (data) => {
-      notifyStream({ task: this.currentTask!, data, packagePath });
+      this.notifyClient.notify(
+        stream({ task: this.currentTask!, data, packagePath }),
+      );
       stdout += data;
     });
 
     this.read(process.stderr.getReader(), (data) => {
-      notifyStream({ task: this.currentTask!, data, packagePath });
+      this.notifyClient.notify(
+        stream({ task: this.currentTask!, data, packagePath }),
+      );
       stderr += data;
     });
     const { signal, success } = await process.status;
@@ -80,12 +146,16 @@ export default class Builder {
     let stderr = "";
 
     this.read(process.stdout.getReader(), (data) => {
-      notifyStream({ task: this.currentTask!, data, packagePath });
+      this.notifyClient.notify(
+        stream({ task: this.currentTask!, data, packagePath }),
+      );
       stdout += data;
     });
 
     this.read(process.stderr.getReader(), (data) => {
-      notifyStream({ task: this.currentTask!, data, packagePath });
+      this.notifyClient.notify(
+        stream({ task: this.currentTask!, data, packagePath }),
+      );
       stderr += data;
     });
     const { success, signal } = await process.status;
@@ -115,7 +185,7 @@ export default class Builder {
     throw new Error(`源码仓库工作区有变更: \n${process.stdout}`);
   }
 
-  static async prepareTask(task: Task) {
+  private static async prepareTask(task: Task) {
     const repository = this.workspace.find((repo) =>
       isSameGitOrigin(repo.origin, task.origin)
     );
@@ -126,7 +196,7 @@ export default class Builder {
       throw new Error(`branch ${task.branch} not found`);
     }
 
-    notifySnapshot({ task, status: "pending" });
+    this.notifyClient.notify(snapshot({ task, status: "pending" }));
 
     // 拉取最新代码
     const process = new Deno.Command("git", {
@@ -140,18 +210,20 @@ export default class Builder {
     let stderr = "";
 
     this.read(process.stdout.getReader(), (data) => {
-      notifyStream({ task: this.currentTask!, data });
+      this.notifyClient.notify(stream({ task: this.currentTask!, data }));
       stdout += data;
     });
 
     this.read(process.stderr.getReader(), (data) => {
-      notifyStream({ task: this.currentTask!, data });
+      this.notifyClient.notify(stream({ task: this.currentTask!, data }));
       stderr += data;
     });
     const { success, signal } = await process.status;
     if (!success) throw { signal, stdout, stderr };
 
-    const packages: Package[] = filterPackages(repository, task).map((item) => (
+    const packages: Package[] = this.filterPackages(repository, task).map((
+      item,
+    ) => (
       { path: item, status: "pending" }
     ));
 
@@ -165,9 +237,13 @@ export default class Builder {
 
   static async run(task: Task) {
     this.currentTask = task;
+    this.notifyClient = await Notify.getClient();
+
     try {
       const { repository, packages, commits } = await this.prepareTask(task);
-      notifySnapshot({ task, status: "pending", packages, commits });
+      this.notifyClient.notify(
+        snapshot({ task, status: "pending", packages, commits }),
+      );
       for (const item of packages) {
         try {
           await this.installPackage(repository, item.path);
@@ -179,16 +255,23 @@ export default class Builder {
           item.logs = logs;
           continue;
         } finally {
-          notifySnapshot({ task, status: "pending", packages, commits });
+          this.notifyClient.notify(
+            snapshot({ task, status: "pending", packages, commits }),
+          );
           await this.checkRepositoryDirty(repository);
         }
       }
-      notifySnapshot({ task, status: "resolved", packages, commits });
+      this.notifyClient.notify(
+        snapshot({ task, status: "resolved", packages, commits }),
+      );
     } catch (err) {
       const logs = err instanceof Error ? err.message : err as ExecLog;
-      notifySnapshot({ task: task, status: "rejected", logs: logs });
+      this.notifyClient.notify(
+        snapshot({ task: task, status: "rejected", logs: logs }),
+      );
     } finally {
       this.currentTask = null;
+      this.notifyClient.release();
     }
   }
 

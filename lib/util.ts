@@ -1,3 +1,4 @@
+import { join } from "@std/path/join";
 import type { Config } from "./type.ts";
 import { resolve } from "@std/path/resolve";
 
@@ -70,4 +71,78 @@ export function sleep(ms: number) {
 
 export function getRandomString() {
   return Math.random().toString(36).slice(2);
+}
+
+export function getRepositoryInfo(repositoryPath: string) {
+  const getRemoteCommand = new Deno.Command("git", {
+    cwd: repositoryPath,
+    args: ["remote", "get-url", "origin"],
+    stdout: "piped",
+  });
+  const { stdout: remoteStdout } = getRemoteCommand.outputSync();
+  const origin = new TextDecoder().decode(remoteStdout).trim();
+
+  const getBranchCommand = new Deno.Command("git", {
+    cwd: repositoryPath,
+    args: ["rev-parse", "--abbrev-ref", "HEAD"],
+    stdout: "piped",
+    stderr: "piped",
+  });
+  const { stdout: branchStdout } = getBranchCommand.outputSync();
+  const branch = new TextDecoder().decode(branchStdout).trim();
+
+  return { origin, branch };
+}
+
+export function findPackages(
+  dirPath: string,
+  packages: string[] = [],
+): string[] {
+  for (const entity of Deno.readDirSync(dirPath)) {
+    if (entity.name === "node_modules") continue;
+    if (entity.isDirectory) {
+      const absolutePath = join(dirPath, entity.name);
+      findPackages(absolutePath, packages);
+    } else if (["deno.json", "package.json"].includes(entity.name)) {
+      packages.push(dirPath);
+    }
+  }
+  return packages;
+}
+
+function pkgManagerWrapper(pkgManager: string) {
+  return isExecutableExist(pkgManager) ? pkgManager : `yes | npx ${pkgManager}`;
+}
+
+const lockfileMap = {
+  pnpm: "pnpm-lock.yaml",
+  npm: "package-lock.json",
+  yarn: "yarn.lock",
+  bun: "bun.lockb",
+  deno: "deno.lock",
+};
+
+export function getPackageManager(packagePath: string) {
+  const lockfiles = Object.entries(lockfileMap).map(
+    ([pkgManager, lockfile]) => {
+      const ifExist = isFileExistSync(resolve(packagePath, lockfile));
+      return { ifExist, lockfile, pkgManager };
+    },
+  );
+
+  const lockfilesExist = lockfiles.filter((item) => item.ifExist);
+
+  if (lockfilesExist.length === 0) {
+    throw new Error(`未找到任何lockfile,请提交你的lockfile后再提交任务`);
+  }
+
+  if (lockfilesExist.length > 1) {
+    const lockfiles = lockfilesExist.map((item) => item.lockfile);
+    throw new Error(
+      `发现多个lockfile: ${lockfiles}, 打包服务不知道应该使用哪一个lockfile来安装你的依赖, 请删除多余的lockfile后重新提交任务`,
+    );
+  }
+
+  const [{ pkgManager }] = lockfilesExist;
+  return pkgManagerWrapper(pkgManager);
 }
