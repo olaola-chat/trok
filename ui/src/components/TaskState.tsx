@@ -5,9 +5,7 @@ import { useEffect, useState } from "preact/hooks";
 import type { StreamData, TaskSnapshot } from "../../../lib/type.ts";
 import { Socket } from "../service/index.ts";
 
-export default function TaskState(props: {
-  snapshots: TaskSnapshot[];
-}) {
+export default function TaskState(props: { snapshots: TaskSnapshot[] }) {
   const [taskState] = props.snapshots.sort((a, b) => {
     const value = b.timestamp - a.timestamp;
     if (value !== 0) return value;
@@ -27,9 +25,7 @@ export default function TaskState(props: {
 
   return (
     <>
-      <div
-        className={`flex flex-col items-start chat chat-start mb-5`}
-      >
+      <div className={`flex flex-col items-start chat chat-start mb-5`}>
         <div className="chat-header opacity-50 mb-1 text-xs ">
           {taskState.task.origin}
           <span className="text-xs badge badge-xs badge-primary mx-2">
@@ -52,21 +48,36 @@ export default function TaskState(props: {
               <>
                 <h6>提交记录</h6>
                 <ul className="text-xs">
-                  {taskState.commits.map(
-                    (commitItem) => <li>✦ {commitItem}</li>,
-                  )}
+                  {taskState.commits.map((commitItem) => <li>✦ {commitItem}
+                  </li>)}
                 </ul>
               </>
             )
             : null}
+
+          {streamData.filter((item) => !item.packagePath).length > 0 &&
+            taskState.status === "pending" && (
+            <pre
+              title="stream"
+              className="overflow-x-scroll bg-secondary-content rounded text-info p-2 my-2 max-h-80 max-w-5xl"
+              ref={(el) => el?.scrollTo(0, el.scrollHeight)}
+            >
+                <code>
+                  {streamData
+                    .filter((item) => !item.packagePath)
+                    .map((item) => item.data)}
+                </code>
+            </pre>
+          )}
+
           {taskState.packages?.length
             ? (
               <>
                 <h6>项目列表</h6>
                 <ul className="text-xs">
                   {taskState.packages?.map((packageItem) => {
-                    const packageStream = streamData.filter((item) =>
-                      item.packagePath === packageItem.path
+                    const packageStream = streamData.filter(
+                      (item) => item.packagePath === packageItem.path,
                     );
 
                     return (
@@ -83,47 +94,53 @@ export default function TaskState(props: {
                           }[packageItem.status]} {packageItem.path}
                         </li>
                         {packageStream.length > 0 &&
-                          packageItem.status === "pending" &&
-                          (
-                            <pre
-                              title="stream"
-                              className="overflow-x-scroll bg-secondary-content rounded text-info p-2 my-2 max-h-80 max-w-5xl"
-                              ref={(el) => el?.scrollTo(0, el.scrollHeight)}
-                            >
-                        <code>
-                          {packageStream.map((item) => item.data)}
-                        </code>
-                            </pre>
-                          )}
-                        {packageItem.logs &&
-                          (
-                            <div className="text-xs">
-                              {packageItem.logs instanceof Error
-                                ? (
-                                  <pre className="bg-error-content rounded text-error p-2 my-2 overflow-x-scroll max-h-80 max-w-5xl">{packageItem.logs}</pre>
-                                )
-                                : (
-                                  <>
-                                    <pre
-                                      title="stdout"
-                                      className="overflow-x-scroll bg-info-content rounded text-info p-2 my-2 max-h-80 max-w-5xl"
-                                      ref={(el) =>
-                                        el?.scrollTo(0, el.scrollHeight)}
-                                    ><code>{packageItem.logs.stdout}</code></pre>
-                                    <pre
-                                      title="signal"
-                                      class="bg-primary-content"
-                                    >{packageItem.logs.signal}</pre>
-                                    <pre
-                                      title="stderr"
-                                      className="overflow-x-scroll bg-error-content rounded text-error p-2 my-2 max-h-80 max-w-5xl"
-                                      ref={(el) =>
-                                        el?.scrollTo(0, el.scrollHeight)}
-                                    ><code >{packageItem.logs.stderr}</code></pre>
-                                  </>
-                                )}
-                            </div>
-                          )}
+                          packageItem.status === "pending" && (
+                          <pre
+                            title="stream"
+                            className="overflow-x-scroll bg-secondary-content rounded text-info p-2 my-2 max-h-80 max-w-5xl"
+                            ref={(el) => el?.scrollTo(0, el.scrollHeight)}
+                          >
+                            <code>
+                              {packageStream.map((item) => item.data)}
+                            </code>
+                          </pre>
+                        )}
+                        {packageItem.logs && (
+                          <div className="text-xs">
+                            {packageItem.logs instanceof Error
+                              ? (
+                                <pre className="bg-error-content rounded text-error p-2 my-2 overflow-x-scroll max-h-80 max-w-5xl">
+                              {packageItem.logs}
+                                </pre>
+                              )
+                              : (
+                                <>
+                                  <pre
+                                    title="stdout"
+                                    className="overflow-x-scroll bg-info-content rounded text-info p-2 my-2 max-h-80 max-w-5xl"
+                                    ref={(el) =>
+                                      el?.scrollTo(0, el.scrollHeight)}
+                                  >
+                                <code>{packageItem.logs.stdout}</code>
+                                  </pre>
+                                  <pre
+                                    title="signal"
+                                    class="bg-primary-content"
+                                  >
+                                {packageItem.logs.signal}
+                                  </pre>
+                                  <pre
+                                    title="stderr"
+                                    className="overflow-x-scroll bg-error-content rounded text-error p-2 my-2 max-h-80 max-w-5xl"
+                                    ref={(el) =>
+                                      el?.scrollTo(0, el.scrollHeight)}
+                                  >
+                                <code>{packageItem.logs.stderr}</code>
+                                  </pre>
+                                </>
+                              )}
+                          </div>
+                        )}
                       </>
                     );
                   })}

@@ -155,98 +155,99 @@ function TaskState(props) {
       }
     });
   }, []);
-  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsxs(
-    "div",
-    {
-      className: `flex flex-col items-start chat chat-start mb-5`,
-      children: [
-        /* @__PURE__ */ jsxs("div", { className: "chat-header opacity-50 mb-1 text-xs ", children: [
-          taskState.task.origin,
-          /* @__PURE__ */ jsx("span", { className: "text-xs badge badge-xs badge-primary mx-2", children: taskState.task.branch }),
-          /* @__PURE__ */ jsx("span", { className: "kbd kbd-xs", children: taskState.task.selector })
-        ] }),
-        /* @__PURE__ */ jsxs(
-          "div",
-          {
-            className: `chat-bubble min-w-80 relative chat-bubble-${{
-              pending: "neutral",
-              resolved: "success",
-              rejected: "error"
-            }[taskState.status]}`,
-            children: [
-              taskState.message,
-              taskState.commits?.length ? /* @__PURE__ */ jsxs(Fragment, { children: [
-                /* @__PURE__ */ jsx("h6", { children: "\u63D0\u4EA4\u8BB0\u5F55" }),
-                /* @__PURE__ */ jsx("ul", { className: "text-xs", children: taskState.commits.map(
-                  (commitItem) => /* @__PURE__ */ jsxs("li", { children: [
-                    "\u2726 ",
-                    commitItem
-                  ] })
-                ) })
-              ] }) : null,
-              taskState.packages?.length ? /* @__PURE__ */ jsxs(Fragment, { children: [
-                /* @__PURE__ */ jsx("h6", { children: "\u9879\u76EE\u5217\u8868" }),
-                /* @__PURE__ */ jsx("ul", { className: "text-xs", children: taskState.packages?.map((packageItem) => {
-                  const packageStream = streamData.filter(
-                    (item) => item.packagePath === packageItem.path
-                  );
-                  return /* @__PURE__ */ jsxs(Fragment, { children: [
-                    /* @__PURE__ */ jsxs("li", { className: "text-sm flex items-center gap-2", children: [
-                      {
-                        pending: packageStream.length ? /* @__PURE__ */ jsx("span", { className: "loading loading-spinner text-warning loading-xs" }) : /* @__PURE__ */ jsx("span", { className: "text-warning", children: "-" }),
-                        rejected: /* @__PURE__ */ jsx("span", { className: "text-error", children: "\u2717" }),
-                        resolved: /* @__PURE__ */ jsx("span", { className: "text-primary", children: "\u2713" })
-                      }[packageItem.status],
-                      " ",
-                      packageItem.path
-                    ] }),
-                    packageStream.length > 0 && packageItem.status === "pending" && /* @__PURE__ */ jsx(
-                      "pre",
-                      {
-                        title: "stream",
-                        className: "overflow-x-scroll bg-secondary-content rounded text-info p-2 my-2 max-h-80 max-w-5xl",
-                        ref: (el) => el?.scrollTo(0, el.scrollHeight),
-                        children: /* @__PURE__ */ jsx("code", { children: packageStream.map((item) => item.data) })
-                      }
-                    ),
-                    packageItem.logs && /* @__PURE__ */ jsx("div", { className: "text-xs", children: packageItem.logs instanceof Error ? /* @__PURE__ */ jsx("pre", { className: "bg-error-content rounded text-error p-2 my-2 overflow-x-scroll max-h-80 max-w-5xl", children: packageItem.logs }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-                      /* @__PURE__ */ jsx(
-                        "pre",
-                        {
-                          title: "stdout",
-                          className: "overflow-x-scroll bg-info-content rounded text-info p-2 my-2 max-h-80 max-w-5xl",
-                          ref: (el) => el?.scrollTo(0, el.scrollHeight),
-                          children: /* @__PURE__ */ jsx("code", { children: packageItem.logs.stdout })
-                        }
-                      ),
-                      /* @__PURE__ */ jsx(
-                        "pre",
-                        {
-                          title: "signal",
-                          class: "bg-primary-content",
-                          children: packageItem.logs.signal
-                        }
-                      ),
-                      /* @__PURE__ */ jsx(
-                        "pre",
-                        {
-                          title: "stderr",
-                          className: "overflow-x-scroll bg-error-content rounded text-error p-2 my-2 max-h-80 max-w-5xl",
-                          ref: (el) => el?.scrollTo(0, el.scrollHeight),
-                          children: /* @__PURE__ */ jsx("code", { children: packageItem.logs.stderr })
-                        }
-                      )
-                    ] }) })
-                  ] });
-                }) })
-              ] }) : null
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsx("div", { className: "chat-footer opacity-50 text-xs mt-1", children: new Date(taskState.timestamp).toLocaleString() })
-      ]
-    }
-  ) });
+  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsxs("div", { className: `flex flex-col items-start chat chat-start mb-5`, children: [
+    /* @__PURE__ */ jsxs("div", { className: "chat-header opacity-50 mb-1 text-xs ", children: [
+      taskState.task.origin,
+      /* @__PURE__ */ jsx("span", { className: "text-xs badge badge-xs badge-primary mx-2", children: taskState.task.branch }),
+      /* @__PURE__ */ jsx("span", { className: "kbd kbd-xs", children: taskState.task.selector })
+    ] }),
+    /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: `chat-bubble min-w-80 relative chat-bubble-${{
+          pending: "neutral",
+          resolved: "success",
+          rejected: "error"
+        }[taskState.status]}`,
+        children: [
+          taskState.message,
+          taskState.commits?.length ? /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx("h6", { children: "\u63D0\u4EA4\u8BB0\u5F55" }),
+            /* @__PURE__ */ jsx("ul", { className: "text-xs", children: taskState.commits.map((commitItem) => /* @__PURE__ */ jsxs("li", { children: [
+              "\u2726 ",
+              commitItem
+            ] })) })
+          ] }) : null,
+          streamData.filter((item) => !item.packagePath).length > 0 && taskState.status === "pending" && /* @__PURE__ */ jsx(
+            "pre",
+            {
+              title: "stream",
+              className: "overflow-x-scroll bg-secondary-content rounded text-info p-2 my-2 max-h-80 max-w-5xl",
+              ref: (el) => el?.scrollTo(0, el.scrollHeight),
+              children: /* @__PURE__ */ jsx("code", { children: streamData.filter((item) => !item.packagePath).map((item) => item.data) })
+            }
+          ),
+          taskState.packages?.length ? /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx("h6", { children: "\u9879\u76EE\u5217\u8868" }),
+            /* @__PURE__ */ jsx("ul", { className: "text-xs", children: taskState.packages?.map((packageItem) => {
+              const packageStream = streamData.filter(
+                (item) => item.packagePath === packageItem.path
+              );
+              return /* @__PURE__ */ jsxs(Fragment, { children: [
+                /* @__PURE__ */ jsxs("li", { className: "text-sm flex items-center gap-2", children: [
+                  {
+                    pending: packageStream.length ? /* @__PURE__ */ jsx("span", { className: "loading loading-spinner text-warning loading-xs" }) : /* @__PURE__ */ jsx("span", { className: "text-warning", children: "-" }),
+                    rejected: /* @__PURE__ */ jsx("span", { className: "text-error", children: "\u2717" }),
+                    resolved: /* @__PURE__ */ jsx("span", { className: "text-primary", children: "\u2713" })
+                  }[packageItem.status],
+                  " ",
+                  packageItem.path
+                ] }),
+                packageStream.length > 0 && packageItem.status === "pending" && /* @__PURE__ */ jsx(
+                  "pre",
+                  {
+                    title: "stream",
+                    className: "overflow-x-scroll bg-secondary-content rounded text-info p-2 my-2 max-h-80 max-w-5xl",
+                    ref: (el) => el?.scrollTo(0, el.scrollHeight),
+                    children: /* @__PURE__ */ jsx("code", { children: packageStream.map((item) => item.data) })
+                  }
+                ),
+                packageItem.logs && /* @__PURE__ */ jsx("div", { className: "text-xs", children: packageItem.logs instanceof Error ? /* @__PURE__ */ jsx("pre", { className: "bg-error-content rounded text-error p-2 my-2 overflow-x-scroll max-h-80 max-w-5xl", children: packageItem.logs }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+                  /* @__PURE__ */ jsx(
+                    "pre",
+                    {
+                      title: "stdout",
+                      className: "overflow-x-scroll bg-info-content rounded text-info p-2 my-2 max-h-80 max-w-5xl",
+                      ref: (el) => el?.scrollTo(0, el.scrollHeight),
+                      children: /* @__PURE__ */ jsx("code", { children: packageItem.logs.stdout })
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "pre",
+                    {
+                      title: "signal",
+                      class: "bg-primary-content",
+                      children: packageItem.logs.signal
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "pre",
+                    {
+                      title: "stderr",
+                      className: "overflow-x-scroll bg-error-content rounded text-error p-2 my-2 max-h-80 max-w-5xl",
+                      ref: (el) => el?.scrollTo(0, el.scrollHeight),
+                      children: /* @__PURE__ */ jsx("code", { children: packageItem.logs.stderr })
+                    }
+                  )
+                ] }) })
+              ] });
+            }) })
+          ] }) : null
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "chat-footer opacity-50 text-xs mt-1", children: new Date(taskState.timestamp).toLocaleString() })
+  ] }) });
 }
 
 // ui/src/pages/index/index.tsx
@@ -328,7 +329,7 @@ function Main() {
     });
   }, []);
   return /* @__PURE__ */ jsxs2("div", { className: "flex gap-2 w-screen", children: [
-    /* @__PURE__ */ jsx2("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll w-96", children: /* @__PURE__ */ jsx2(
+    /* @__PURE__ */ jsx2("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll", children: /* @__PURE__ */ jsx2(
       Workspace,
       {
         onCreateTask: async (origin, branch, selector) => {

@@ -14,7 +14,7 @@ export type Task = {
 
 export type StreamData = {
   task: Task;
-  packagePath: string;
+  packagePath?: string;
   data: string;
 };
 
@@ -31,7 +31,6 @@ export type Package = {
 };
 
 export type TaskSnapshot = {
-  id: string;
   task: Task;
   timestamp: number;
   status: "pending" | "resolved" | "rejected";
