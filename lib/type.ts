@@ -36,7 +36,7 @@ export type TaskSnapshot = {
   status: "pending" | "resolved" | "rejected";
   commits?: string[];
   packages?: Package[];
-  message?: string;
+  logs?: ExecLog | Error;
 };
 
 export type SocketData = {

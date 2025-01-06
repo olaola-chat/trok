@@ -104,7 +104,7 @@ function Main() {
 
   return (
     <div className="flex gap-2 w-screen">
-      <div className="p-2 bg-base-200 h-screen overflow-y-scroll">
+      <div className="p-2 bg-base-200 h-screen overflow-y-scroll w-96">
         <Workspace
           onCreateTask={async (origin, branch, selector) => {
             await fetch("/task", {

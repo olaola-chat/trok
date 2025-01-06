@@ -126,6 +126,8 @@ export default class Builder {
       throw new Error(`branch ${task.branch} not found`);
     }
 
+    notifySnapshot({ task, status: "pending" });
+
     // 拉取最新代码
     const process = new Deno.Command("git", {
       cwd: repository.path,
@@ -182,8 +184,8 @@ export default class Builder {
       }
       notifySnapshot({ task, status: "resolved", packages, commits });
     } catch (err) {
-      const message = (err as Error).message;
-      notifySnapshot({ task: task, status: "rejected", message });
+      const logs = err as ExecLog | Error;
+      notifySnapshot({ task: task, status: "rejected", logs: logs });
     } finally {
       this.currentTask = null;
     }

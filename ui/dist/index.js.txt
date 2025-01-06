@@ -139,6 +139,29 @@ import { useEffect as useEffect3 } from "preact/hooks";
 // ui/src/components/TaskState.tsx
 import { useEffect as useEffect2, useState as useState2 } from "preact/hooks";
 import { Fragment, jsx, jsxs } from "preact/jsx-runtime";
+function Logs(props) {
+  return /* @__PURE__ */ jsx("div", { className: "text-xs", children: props.logs instanceof Error ? /* @__PURE__ */ jsx("pre", { className: "bg-error-content rounded text-error p-2 my-2 overflow-x-scroll max-h-80 max-w-5xl", children: props.logs }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(
+      "pre",
+      {
+        title: "stdout",
+        className: "overflow-x-scroll bg-info-content rounded text-info p-2 my-2 max-h-80 max-w-5xl",
+        ref: (el) => el?.scrollTo(0, el.scrollHeight),
+        children: /* @__PURE__ */ jsx("code", { children: props.logs.stdout })
+      }
+    ),
+    /* @__PURE__ */ jsx("pre", { title: "signal", class: "bg-primary-content", children: props.logs.signal }),
+    /* @__PURE__ */ jsx(
+      "pre",
+      {
+        title: "stderr",
+        className: "overflow-x-scroll bg-error-content rounded text-error p-2 my-2 max-h-80 max-w-5xl",
+        ref: (el) => el?.scrollTo(0, el.scrollHeight),
+        children: /* @__PURE__ */ jsx("code", { children: props.logs.stderr })
+      }
+    )
+  ] }) });
+}
 function TaskState(props) {
   const [taskState] = props.snapshots.sort((a, b) => {
     const value = b.timestamp - a.timestamp;
@@ -170,7 +193,7 @@ function TaskState(props) {
           rejected: "error"
         }[taskState.status]}`,
         children: [
-          taskState.message,
+          taskState.logs && /* @__PURE__ */ jsx(Logs, { logs: taskState.logs }),
           taskState.commits?.length ? /* @__PURE__ */ jsxs(Fragment, { children: [
             /* @__PURE__ */ jsx("h6", { children: "\u63D0\u4EA4\u8BB0\u5F55" }),
             /* @__PURE__ */ jsx("ul", { className: "text-xs", children: taskState.commits.map((commitItem) => /* @__PURE__ */ jsxs("li", { children: [
@@ -212,34 +235,7 @@ function TaskState(props) {
                     children: /* @__PURE__ */ jsx("code", { children: packageStream.map((item) => item.data) })
                   }
                 ),
-                packageItem.logs && /* @__PURE__ */ jsx("div", { className: "text-xs", children: packageItem.logs instanceof Error ? /* @__PURE__ */ jsx("pre", { className: "bg-error-content rounded text-error p-2 my-2 overflow-x-scroll max-h-80 max-w-5xl", children: packageItem.logs }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-                  /* @__PURE__ */ jsx(
-                    "pre",
-                    {
-                      title: "stdout",
-                      className: "overflow-x-scroll bg-info-content rounded text-info p-2 my-2 max-h-80 max-w-5xl",
-                      ref: (el) => el?.scrollTo(0, el.scrollHeight),
-                      children: /* @__PURE__ */ jsx("code", { children: packageItem.logs.stdout })
-                    }
-                  ),
-                  /* @__PURE__ */ jsx(
-                    "pre",
-                    {
-                      title: "signal",
-                      class: "bg-primary-content",
-                      children: packageItem.logs.signal
-                    }
-                  ),
-                  /* @__PURE__ */ jsx(
-                    "pre",
-                    {
-                      title: "stderr",
-                      className: "overflow-x-scroll bg-error-content rounded text-error p-2 my-2 max-h-80 max-w-5xl",
-                      ref: (el) => el?.scrollTo(0, el.scrollHeight),
-                      children: /* @__PURE__ */ jsx("code", { children: packageItem.logs.stderr })
-                    }
-                  )
-                ] }) })
+                packageItem.logs && /* @__PURE__ */ jsx(Logs, { logs: packageItem.logs })
               ] });
             }) })
           ] }) : null
@@ -329,7 +325,7 @@ function Main() {
     });
   }, []);
   return /* @__PURE__ */ jsxs2("div", { className: "flex gap-2 w-screen", children: [
-    /* @__PURE__ */ jsx2("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll", children: /* @__PURE__ */ jsx2(
+    /* @__PURE__ */ jsx2("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll w-96", children: /* @__PURE__ */ jsx2(
       Workspace,
       {
         onCreateTask: async (origin, branch, selector) => {

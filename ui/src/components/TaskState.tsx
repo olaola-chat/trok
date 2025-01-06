@@ -2,8 +2,42 @@
 /** @jsxImportSource preact */
 
 import { useEffect, useState } from "preact/hooks";
-import type { StreamData, TaskSnapshot } from "../../../lib/type.ts";
+import type { ExecLog, StreamData, TaskSnapshot } from "../../../lib/type.ts";
 import { Socket } from "../service/index.ts";
+
+function Logs(props: { logs: Error | ExecLog }) {
+  return (
+    <div className="text-xs">
+      {props.logs instanceof Error
+        ? (
+          <pre className="bg-error-content rounded text-error p-2 my-2 overflow-x-scroll max-h-80 max-w-5xl">
+          {props.logs}
+          </pre>
+        )
+        : (
+          <>
+            <pre
+              title="stdout"
+              className="overflow-x-scroll bg-info-content rounded text-info p-2 my-2 max-h-80 max-w-5xl"
+              ref={(el) => el?.scrollTo(0, el.scrollHeight)}
+            >
+            <code>{props.logs.stdout}</code>
+            </pre>
+            <pre title="signal" class="bg-primary-content">
+            {props.logs.signal}
+            </pre>
+            <pre
+              title="stderr"
+              className="overflow-x-scroll bg-error-content rounded text-error p-2 my-2 max-h-80 max-w-5xl"
+              ref={(el) => el?.scrollTo(0, el.scrollHeight)}
+            >
+            <code>{props.logs.stderr}</code>
+            </pre>
+          </>
+        )}
+    </div>
+  );
+}
 
 export default function TaskState(props: { snapshots: TaskSnapshot[] }) {
   const [taskState] = props.snapshots.sort((a, b) => {
@@ -42,7 +76,7 @@ export default function TaskState(props: { snapshots: TaskSnapshot[] }) {
             }[taskState.status]
           }`}
         >
-          {taskState.message}
+          {taskState.logs && <Logs logs={taskState.logs} />}
           {taskState.commits?.length
             ? (
               <>
@@ -105,42 +139,7 @@ export default function TaskState(props: { snapshots: TaskSnapshot[] }) {
                             </code>
                           </pre>
                         )}
-                        {packageItem.logs && (
-                          <div className="text-xs">
-                            {packageItem.logs instanceof Error
-                              ? (
-                                <pre className="bg-error-content rounded text-error p-2 my-2 overflow-x-scroll max-h-80 max-w-5xl">
-                              {packageItem.logs}
-                                </pre>
-                              )
-                              : (
-                                <>
-                                  <pre
-                                    title="stdout"
-                                    className="overflow-x-scroll bg-info-content rounded text-info p-2 my-2 max-h-80 max-w-5xl"
-                                    ref={(el) =>
-                                      el?.scrollTo(0, el.scrollHeight)}
-                                  >
-                                <code>{packageItem.logs.stdout}</code>
-                                  </pre>
-                                  <pre
-                                    title="signal"
-                                    class="bg-primary-content"
-                                  >
-                                {packageItem.logs.signal}
-                                  </pre>
-                                  <pre
-                                    title="stderr"
-                                    className="overflow-x-scroll bg-error-content rounded text-error p-2 my-2 max-h-80 max-w-5xl"
-                                    ref={(el) =>
-                                      el?.scrollTo(0, el.scrollHeight)}
-                                  >
-                                <code>{packageItem.logs.stderr}</code>
-                                  </pre>
-                                </>
-                              )}
-                          </div>
-                        )}
+                        {packageItem.logs && <Logs logs={packageItem.logs} />}
                       </>
                     );
                   })}
