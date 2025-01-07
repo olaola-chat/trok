@@ -22,5 +22,4 @@ if (command === "build") {
 
 if (!command || args.help || args.h) {
   // TODO: show help
-  Deno.exit(0);
 }
