@@ -46,6 +46,7 @@ export class Socket {
   static timer: number;
 
   static {
+    this.client.addEventListener("open", () => this.client.send("PING"));
     this.client.addEventListener("message", (e) => {
       if (e.data === "PONG") {
         setTimeout(() => this.client.send("PING"), 10 * 1000);

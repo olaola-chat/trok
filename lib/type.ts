@@ -14,7 +14,7 @@ export type Task = {
 };
 
 export type StreamData = {
-  taskId: Task['id'];
+  taskId: Task["id"];
   packagePath?: string;
   data: string;
 };
@@ -46,4 +46,11 @@ export type SocketData = {
 } | {
   type: "stream";
   data: StreamData;
+};
+
+export type GithubWebhookBody = {
+  ref: string;
+  compare: string;
+  repository: { html_url: string };
+  sender: { login: string };
 };

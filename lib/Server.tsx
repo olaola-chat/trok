@@ -1,10 +1,12 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource preact */
 
+import { basename } from "@std/path";
+
 import { render } from "preact-render-to-string";
 import Index from "../ui/index.server.tsx";
 import { getRandomString } from "./util.ts";
-import type { Task } from "./type.ts";
+import type { GithubWebhookBody, Task } from "./type.ts";
 import Builder from "./Builder.ts";
 
 import { SnapshotHub, SocketHub, TaskHub } from "./Hub.ts";
@@ -65,6 +67,18 @@ async function handler(req: Request) {
 
     case "GET /workspace":
       return json(Builder.workspace);
+
+    case "POST /github": {
+      const data = await req.json() as GithubWebhookBody;
+      TaskHub.register({
+        origin: data.repository.html_url,
+        branch: basename(data.ref),
+        selector: basename(data.compare),
+        id: getRandomString(),
+        notify: `ws://${Server.host}`,
+      });
+      return new Response();
+    }
 
     default:
       return new Response("Not Found", { status: 404 });
