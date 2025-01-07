@@ -17,12 +17,11 @@ export function isSameGitOrigin(a: string, b: string) {
 }
 
 export function isExecutableExist(executable: string) {
-  const command = new Deno.Command(executable, {
+  return new Deno.Command(executable, {
     args: ["-v"],
     stdout: "piped",
     stderr: "piped",
-  });
-  return command.outputSync().success;
+  }).outputSync().success;
 }
 
 export function isFileExistSync(filePath: string): boolean {
@@ -30,11 +29,8 @@ export function isFileExistSync(filePath: string): boolean {
     const fileInfo = Deno.statSync(filePath);
     return fileInfo.isFile;
   } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
-      return false;
-    } else {
-      throw error;
-    }
+    if (error instanceof Deno.errors.NotFound) return false;
+    else throw error;
   }
 }
 
@@ -64,22 +60,22 @@ export function getRandomString() {
 }
 
 export function getRepositoryInfo(repositoryPath: string) {
-  const getRemoteCommand = new Deno.Command("git", {
+  const { stdout: remoteStdout } = new Deno.Command("git", {
     cwd: repositoryPath,
     args: ["remote", "get-url", "origin"],
     stdout: "piped",
-  });
-  const { stdout: remoteStdout } = getRemoteCommand.outputSync();
-  const origin = new TextDecoder().decode(remoteStdout).trim();
+  }).outputSync();
 
-  const getBranchCommand = new Deno.Command("git", {
+  const { stdout: branchStdout } = new Deno.Command("git", {
     cwd: repositoryPath,
     args: ["rev-parse", "--abbrev-ref", "HEAD"],
     stdout: "piped",
     stderr: "piped",
-  });
-  const { stdout: branchStdout } = getBranchCommand.outputSync();
-  const branch = new TextDecoder().decode(branchStdout).trim();
+  }).outputSync();
+
+  const [origin, branch] = [remoteStdout, branchStdout].map((item) =>
+    new TextDecoder().decode(item).trim()
+  );
 
   return { origin, branch };
 }
