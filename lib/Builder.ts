@@ -130,14 +130,18 @@ export default abstract class Builder {
   }
 
   // 检查打包产物是否污染仓库
-  private static checkRepositoryDirty(repository: Repository) {
-    const process = new Deno.Command("git", {
+  private static async checkRepositoryDirty(repository: Repository) {
+    const { stdout } = await streamExec("git", {
+      cwd: repository.path,
       args: ["status", "-s", repository.path],
-      stderr: "piped",
-      stdout: "piped",
-    }).outputSync();
+      onStreamData: (data) => {
+        this.notifyClient.notify(
+          stream({ taskId: this.currentTask!.id, data }),
+        );
+      },
+    });
 
-    if (!process.success && !new TextDecoder().decode(process.stdout)) return;
+    if (!stdout) return;
 
     new Deno.Command("git", {
       args: ["reset", "HEAD", "--hard"],
@@ -149,9 +153,7 @@ export default abstract class Builder {
       cwd: repository.path,
     }).outputSync();
 
-    throw new Error(
-      `源码仓库工作区有变更: \n${new TextDecoder().decode(process.stdout)}`,
-    );
+    throw new Error(`源码仓库工作区有变更: \n${stdout}`);
   }
 
   private static async prepareTask(task: Task) {

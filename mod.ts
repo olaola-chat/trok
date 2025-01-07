@@ -11,12 +11,18 @@ const [command] = args._;
 if (command === "serve") Server.serve(args.port ?? 8000);
 if (command === "build") {
   const [{ origin, branch }] = Builder.workspace;
+
+  const selector = (args.selector === true ? undefined : args.selector) ??
+    "HEAD^...HEAD";
+
+  const notify = args.notify === true ? undefined : args.notify;
+
   Builder.run({
     id: getRandomString(),
     origin: args.origin ?? origin,
     branch: args.branch ?? branch,
-    selector: args.selector ?? "HEAD^...HEAD",
-    notify: args.notify,
+    selector,
+    notify,
   });
 }
 
