@@ -101,10 +101,20 @@ function useTasks() {
 var Socket = class {
   static mitt = mitt();
   static client = new WebSocket(location.href.replace("http", "ws"));
+  static timer;
   static {
-    this.client.addEventListener("message", (event) => {
-      const data = JSON.parse(event.data);
-      this.mitt.emit("data", data);
+    this.client.addEventListener("open", () => this.client.send("PING"));
+    this.client.addEventListener("message", (e) => {
+      if (e.data === "PONG") {
+        setTimeout(() => this.client.send("PING"), 10 * 1e3);
+      } else {
+        const data = JSON.parse(e.data);
+        this.mitt.emit("data", data);
+      }
+    });
+    this.client.addEventListener("close", (e) => {
+      globalThis.confirm(`socket\u5DF2\u65AD\u5F00,code: ${e.code}, reason: ${e.reason}`);
+      clearInterval(this.timer);
     });
   }
 };
