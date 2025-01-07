@@ -106,7 +106,7 @@ export default abstract class Builder {
         : ["install", "--frozen-lockfile"],
       onStreamData: (data) => {
         this.notifyClient.notify(
-          stream({ task: this.currentTask!, data, packagePath }),
+          stream({ taskId: this.currentTask!.id, data, packagePath }),
         );
       },
     });
@@ -123,7 +123,7 @@ export default abstract class Builder {
       args: ["run", "build"],
       onStreamData: (data) => {
         this.notifyClient.notify(
-          stream({ task: this.currentTask!, data, packagePath }),
+          stream({ taskId: this.currentTask!.id, data, packagePath }),
         );
       },
     });
@@ -165,16 +165,20 @@ export default abstract class Builder {
       throw new Error(`branch ${task.branch} not found`);
     }
 
-    this.notifyClient.notify(snapshot({ task, status: "pending" }));
+    this.notifyClient.notify(snapshot({ task, status: "progress" }));
 
     // 拉取最新代码
     await streamExec("git", {
       cwd: repository.path,
       args: ["pull"],
       onStreamData: (data) => {
-        this.notifyClient.notify(stream({ task: this.currentTask!, data }));
+        this.notifyClient.notify(
+          stream({ taskId: this.currentTask!.id, data }),
+        );
       },
     });
+
+    // this.notifyClient.notify(stream({ taskId: task.id, data: "拉取仓库更新" }));
 
     const packages = this.filterPackages(repository, task).map((
       item,

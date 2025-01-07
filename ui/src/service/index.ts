@@ -62,6 +62,7 @@ export function useSnapshots() {
             notifyMe(
               {
                 pending: "开始处理",
+                progress: "开始打包",
                 resolved: "处理完成",
                 rejected: "处理失败",
               }[data.data.status],

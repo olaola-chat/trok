@@ -11,6 +11,7 @@ export default class Notify {
     if (!notify) {
       return {
         notify: (message: SocketData) => {
+          if (message.type === "stream") return;
           console.log(message);
         },
         release: () => void 0,
@@ -54,7 +55,15 @@ export default class Notify {
            * e.code always 1005
            * @see https://github.com/denoland/deno/issues/27566
            */
+          console.log(`websocket closed: code: ${e.code}; reason: ${e.reason}`);
           if (e.code !== 1000) reject(e.reason);
+        });
+        socket.addEventListener("error", (e) => {
+          console.log(
+            `websocket error: ${
+              e instanceof Error ? e.message : "unknown error"
+            }`,
+          );
         });
       });
     }

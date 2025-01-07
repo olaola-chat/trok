@@ -2,8 +2,8 @@
 /** @jsxImportSource preact */
 
 import { useEffect, useState } from "preact/hooks";
-import type { ExecLog, Snapshot, StreamData } from "../../../lib/type.ts";
-import { Socket } from "../service/index.ts";
+import type { ExecLog, Snapshot, StreamData } from "../../../../lib/type.ts";
+import { Socket } from "../../service/index.ts";
 
 function Code(
   props: {
@@ -43,7 +43,7 @@ export default function TaskState(props: { snapshots: Snapshot[] }) {
   useEffect(() => {
     Socket.mitt.on("data", (data) => {
       if (data.type === "stream") {
-        if (data.data.task.id === taskState.task.id) {
+        if (data.data.taskId === taskState.task.id) {
           setStreamData((value) => [...value, data.data]);
         }
       }

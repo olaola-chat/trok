@@ -2,11 +2,11 @@
 /** @jsxImportSource preact */
 
 import { render } from "preact";
-import { Socket, useTasks, useWorkspace } from "../../service/index.ts";
+import { Socket, useTasks, useWorkspace } from "../service/index.ts";
 import { useEffect } from "preact/hooks";
-import { useSnapshots } from "../../service/index.ts";
-import type { Task } from "../../../../lib/type.ts";
-import TaskState from "../../components/TaskState.tsx";
+import { useSnapshots } from "../service/index.ts";
+import type { Task } from "../../../lib/type.ts";
+import TaskState from "./components/TaskState.tsx";
 
 function Workspace(
   props: {
@@ -32,37 +32,32 @@ function Workspace(
               e.currentTarget.reset();
             }}
           >
-            <div
-              tabIndex={0}
-              className="collapse bg-base-200 collapse-arrow border"
-            >
+            <div className="collapse collapse-arrow border">
+              <input type="checkbox" />
               <div className="collapse-title">
                 <span>{item.origin}</span>
                 <span className="badge badge-primary badge ml-2">
                   {item.branch}
                 </span>
               </div>
-              <div className="collapse-content flex flex-wrap gap-1">
-                {item.packages.map((item) => (
-                  <div
-                    key={item}
-                    className="badge badge-outline badge-accent-content"
-                  >
-                    {item}
-                  </div>
-                ))}
+              <div className="collapse-content">
+                <div className="flex flex-wrap justify-center gap-1">
+                  {item.packages.map((item) => (
+                    <input
+                      type="radio"
+                      aria-label={item}
+                      key={item}
+                      name="selector"
+                      className="btn btn-xs btn-outline"
+                      value={item}
+                    />
+                  ))}
+                </div>
+                <button className="btn btn-primary block btn-wide mt-5 mx-auto btn-sm">
+                  提交任务
+                </button>
               </div>
             </div>
-            <input
-              type="text"
-              name="selector"
-              required
-              placeholder="HEAD^...HEAD"
-              className="input input-bordered input input-sm"
-            />
-            <button className="btn btn-primary self-end btn-sm">
-              添加任务
-            </button>
           </form>
         );
       })}

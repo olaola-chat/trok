@@ -14,7 +14,7 @@ export type Task = {
 };
 
 export type StreamData = {
-  task: Task;
+  taskId: Task['id'];
   packagePath?: string;
   data: string;
 };
