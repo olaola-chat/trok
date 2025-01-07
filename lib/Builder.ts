@@ -3,10 +3,10 @@ import type {
   ExecLog,
   Package,
   Repository,
+  Snapshot,
   SocketData,
   StreamData,
   Task,
-  TaskSnapshot,
 } from "./type.ts";
 import {
   cloneObj,
@@ -19,7 +19,7 @@ import {
 } from "./util.ts";
 import Notify, { type NotifyClient } from "./Notify.ts";
 
-const snapshot = (data: Omit<TaskSnapshot, "timestamp">): SocketData => ({
+const snapshot = (data: Omit<Snapshot, "timestamp">): SocketData => ({
   type: "snapshot",
   data: cloneObj({ ...data, timestamp: Date.now() }),
 });
@@ -192,7 +192,7 @@ export default abstract class Builder {
 
   static async run(task: Task) {
     this.currentTask = task;
-    this.notifyClient = await Notify.getClient();
+    this.notifyClient = await Notify.getClient(task.notify);
 
     try {
       const { repository, packages, commits } = await this.prepareTask(task);
@@ -212,7 +212,7 @@ export default abstract class Builder {
           continue;
         } finally {
           this.notifyClient.notify(
-            snapshot({ task, status: "pending", packages, commits }),
+            snapshot({ task, status: "progress", packages, commits }),
           );
           await this.checkRepositoryDirty(repository);
         }

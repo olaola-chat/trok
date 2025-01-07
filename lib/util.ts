@@ -1,6 +1,5 @@
 import os from "node:os";
 import { join } from "@std/path/join";
-import type { Config } from "./type.ts";
 import { resolve } from "@std/path/resolve";
 
 export function isSameGitOrigin(a: string, b: string) {
@@ -50,16 +49,6 @@ export function getCommits(repositoryPath: string, selector: string) {
 
   const commits = decoder.decode(process.stdout).split("\n");
   return commits.length > 20 ? [...commits.slice(0, 20), "..."] : commits;
-}
-
-export function getConfig(): Config {
-  const configPath = resolve(Deno.cwd() as string, "tork.config.json");
-
-  if (isFileExistSync(configPath)) {
-    return JSON.parse(Deno.readTextFileSync(configPath)) as Config;
-  }
-
-  return {};
 }
 
 export function cloneObj<T>(obj: T) {

@@ -4,7 +4,7 @@
 import { render } from "preact";
 import { Socket, useTasks, useWorkspace } from "../../service/index.ts";
 import { useEffect } from "preact/hooks";
-import { useHub } from "../../service/index.ts";
+import { useSnapshots } from "../../service/index.ts";
 import type { Task } from "../../../../lib/type.ts";
 import TaskState from "../../components/TaskState.tsx";
 
@@ -89,7 +89,7 @@ function TaskList(props: { tasks: Task[] }) {
 }
 
 function Main() {
-  const snapshots = useHub();
+  const snapshots = useSnapshots();
   const snapShotGroups = Object.values(
     Object.groupBy(snapshots, (item) => item.task.id),
   );

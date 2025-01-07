@@ -15,6 +15,7 @@ if (command === "build") {
     origin: args.origin ?? origin,
     branch: args.branch ?? branch,
     selector: args.selector ?? "HEAD^...HEAD",
+    notify: args.notify,
   });
 }
 

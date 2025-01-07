@@ -10,6 +10,7 @@ export type Task = {
   origin: string;
   branch: string;
   selector: string;
+  notify?: string;
 };
 
 export type StreamData = {
@@ -30,10 +31,10 @@ export type Package = {
   logs?: ExecLog | string;
 };
 
-export type TaskSnapshot = {
+export type Snapshot = {
   task: Task;
   timestamp: number;
-  status: "pending" | "resolved" | "rejected";
+  status: "pending" | "progress" | "resolved" | "rejected";
   commits?: string[];
   packages?: Package[];
   logs?: ExecLog | string;
@@ -41,17 +42,8 @@ export type TaskSnapshot = {
 
 export type SocketData = {
   type: "snapshot";
-  data: TaskSnapshot;
+  data: Snapshot;
 } | {
   type: "stream";
   data: StreamData;
-};
-
-export type Config = {
-  // 通知地址
-  notify?: string;
-  users?: {
-    name: string;
-    password: string;
-  }[];
 };

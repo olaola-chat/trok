@@ -1,6 +1,4 @@
 import type { SocketData } from "./type.ts";
-import Configiration from "./Configration.ts";
-import Server from "./Server.tsx";
 
 export type NotifyClient = {
   notify: (message: SocketData) => unknown;
@@ -8,13 +6,13 @@ export type NotifyClient = {
 };
 
 export default class Notify {
-  static async getClient(): Promise<NotifyClient> {
-    const notify = Configiration.notify ?? Server.host;
-
+  static async getClient(notify?: string): Promise<NotifyClient> {
     // 无处通知, 打印到控制台
     if (!notify) {
       return {
-        notify: (message: SocketData) => console.log(message),
+        notify: (message: SocketData) => {
+          console.log(message);
+        },
         release: () => void 0,
       };
     }
@@ -22,12 +20,19 @@ export default class Notify {
     // http通知
     if (notify.startsWith("http")) {
       return ({
-        notify: (message: SocketData) =>
-          void fetch(notify, {
-            method: "POST",
-            body: JSON.stringify(message),
-            headers: { "Content-Type": "applicatin/json" },
-          }),
+        notify: (message: SocketData) => {
+          // http简单通知下
+          if (
+            message.type === "snapshot" && message.data.status !== "progress"
+          ) {
+            void fetch(notify, {
+              method: "POST",
+              body: JSON.stringify(message),
+              headers: { "Content-Type": "applicatin/json" },
+            });
+          } else console.log(message);
+        },
+
         release: () => void 0,
       });
     }
@@ -38,14 +43,15 @@ export default class Notify {
       return await new Promise<NotifyClient>((resolve, reject) => {
         socket.addEventListener("open", () => {
           resolve({
-            notify: (message: SocketData) =>
-              void socket.send(JSON.stringify(message)),
+            notify: (message: SocketData) => {
+              void socket.send(JSON.stringify(message));
+            },
             release: () => void socket.close(1000),
           });
         });
         socket.addEventListener("close", (e) => {
           /**
-           * right now, e.code always 1005
+           * e.code always 1005
            * @see https://github.com/denoland/deno/issues/27566
            */
           if (e.code !== 1000) reject(e.reason);

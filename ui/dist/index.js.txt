@@ -101,7 +101,7 @@ function useTasks() {
 var Socket = class {
   static mitt = mitt();
   static client = new WebSocket(
-    new URL("hub", location.href).href.replace("http", "ws")
+    new URL("notify", location.href).href.replace("http", "ws")
   );
   static {
     this.client.addEventListener("message", (event) => {
@@ -110,10 +110,10 @@ var Socket = class {
     });
   }
 };
-function useHub() {
+function useSnapshots() {
   const [snapshots, setSnapshots] = useState([]);
   useEffect(() => {
-    fetch("/hub").then((res) => res.json()).then(setSnapshots).then(
+    fetch("/snapshot").then((res) => res.json()).then(setSnapshots).then(
       () => {
         Socket.mitt.on("data", (data) => {
           if (data.type === "snapshot") {
@@ -291,7 +291,7 @@ function TaskList(props) {
   }) });
 }
 function Main() {
-  const snapshots = useHub();
+  const snapshots = useSnapshots();
   const snapShotGroups = Object.values(
     Object.groupBy(snapshots, (item) => item.task.id)
   );

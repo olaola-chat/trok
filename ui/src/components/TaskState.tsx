@@ -2,7 +2,7 @@
 /** @jsxImportSource preact */
 
 import { useEffect, useState } from "preact/hooks";
-import type { ExecLog, StreamData, TaskSnapshot } from "../../../lib/type.ts";
+import type { ExecLog, Snapshot, StreamData } from "../../../lib/type.ts";
 import { Socket } from "../service/index.ts";
 
 function Code(
@@ -26,13 +26,13 @@ function Logs(props: { logs: ExecLog | string }) {
   return (
     <>
       <Code title="stdout" theme="info">{props.logs.stdout}</Code>
-      {/* {props.logs.signal} */}
+      {props.logs.signal}
       <Code title="stderr" theme="error">{props.logs.stderr}</Code>
     </>
   );
 }
 
-export default function TaskState(props: { snapshots: TaskSnapshot[] }) {
+export default function TaskState(props: { snapshots: Snapshot[] }) {
   const [taskState] = props.snapshots.sort((a, b) => {
     const value = b.timestamp - a.timestamp;
     if (value !== 0) return value;
@@ -64,6 +64,7 @@ export default function TaskState(props: { snapshots: TaskSnapshot[] }) {
           className={`chat-bubble min-w-80 relative chat-bubble-${
             {
               pending: "neutral",
+              progress: "neutral",
               resolved: "success",
               rejected: "error",
             }[taskState.status]

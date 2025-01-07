@@ -1,11 +1,10 @@
-import mitt from "./mitt.ts";
-import type { StreamData, TaskSnapshot } from "./type.ts";
+import type { Snapshot, SocketData, Task } from "./type.ts";
+import Builder from "./Builder.ts";
 
-export default abstract class Hub {
-  static mitt = mitt<{ snapshot: TaskSnapshot; stream: StreamData }>();
-  static snapshots: TaskSnapshot[] = [];
+export abstract class SnapshotHub {
+  static snapshots: Snapshot[] = [];
 
-  static registry(snapshot: TaskSnapshot) {
+  static registry(snapshot: Snapshot) {
     this.snapshots.push(snapshot);
     // 只保存最近的100个任务
     this.clean();
@@ -20,5 +19,55 @@ export default abstract class Hub {
       tasklist.shift();
       this.snapshots = tasklist.flat().map((item) => item!);
     }
+  }
+}
+
+type SocketClient = {
+  ua: string;
+  socket: WebSocket;
+};
+
+export abstract class SocketHub {
+  static clients: SocketClient[] = [];
+  static registry(client: SocketClient) {
+    this.clients.push(client);
+
+    client.socket.addEventListener("close", () => {
+      const index = this.clients.findIndex((item) =>
+        item.socket === client.socket
+      );
+      this.clients.splice(index, 1);
+    });
+
+    if (client.ua.startsWith("Deno")) {
+      // 接受Trok推送过来的消息
+      client.socket.addEventListener(
+        "message",
+        (e) => {
+          const data = JSON.parse(e.data) as SocketData;
+          if (data.type === "snapshot") SnapshotHub.registry(data.data);
+          this.clients.filter((item) => !item.ua.startsWith("Deno")).forEach(
+            (item) => item.socket.send(e.data),
+          );
+        },
+      );
+    }
+  }
+}
+
+export abstract class TaskHub {
+  static tasks: Task[] = [];
+
+  static register(task: Task) {
+    this.tasks.push(task);
+    this.dispatch();
+  }
+
+  static async dispatch() {
+    if (!Builder.currentTask) {
+      const task = this.tasks.shift();
+      if (task) await Builder.run(task);
+    }
+    setTimeout(() => this.dispatch(), 3000);
   }
 }

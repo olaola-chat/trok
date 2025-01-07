@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "preact/hooks";
 import type {
   Repository,
+  Snapshot,
   SocketData,
   Task,
-  TaskSnapshot,
 } from "../../../lib/type.ts";
 import mitt from "../../../lib/mitt.ts";
 
@@ -42,9 +42,7 @@ export function useTasks() {
 
 export class Socket {
   static mitt = mitt<{ data: SocketData }>();
-  static client = new WebSocket(
-    new URL("hub", location.href).href.replace("http", "ws"),
-  );
+  static client = new WebSocket(location.href.replace("http", "ws"));
 
   static {
     this.client.addEventListener("message", (event) => {
@@ -54,10 +52,10 @@ export class Socket {
   }
 }
 
-export function useHub() {
-  const [snapshots, setSnapshots] = useState<TaskSnapshot[]>([]);
+export function useSnapshots() {
+  const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   useEffect(() => {
-    fetch("/hub").then((res) => res.json()).then(setSnapshots).then(
+    fetch("/snapshot").then((res) => res.json()).then(setSnapshots).then(
       () => {
         Socket.mitt.on("data", (data) => {
           if (data.type === "snapshot") {
