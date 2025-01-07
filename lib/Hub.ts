@@ -39,19 +39,19 @@ export abstract class SocketHub {
       this.clients.splice(index, 1);
     });
 
-    if (client.ua.startsWith("Deno")) {
-      // 接受Trok推送过来的消息
-      client.socket.addEventListener(
-        "message",
-        (e) => {
+    client.socket.addEventListener(
+      "message",
+      (e) => {
+        if (e.data === "PING") client.socket.send("PONG");
+        else {
           const data = JSON.parse(e.data) as SocketData;
           if (data.type === "snapshot") SnapshotHub.registry(data.data);
           this.clients.filter((item) => !item.ua.startsWith("Deno")).forEach(
             (item) => item.socket.send(e.data),
           );
-        },
-      );
-    }
+        }
+      },
+    );
   }
 }
 

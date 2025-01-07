@@ -43,11 +43,21 @@ export function useTasks() {
 export class Socket {
   static mitt = mitt<{ data: SocketData }>();
   static client = new WebSocket(location.href.replace("http", "ws"));
+  static timer: number;
 
   static {
-    this.client.addEventListener("message", (event) => {
-      const data = JSON.parse(event.data) as SocketData;
-      this.mitt.emit("data", data);
+    this.client.addEventListener("message", (e) => {
+      if (e.data === "PONG") {
+        setTimeout(() => this.client.send("PING"), 10 * 1000);
+      } else {
+        const data = JSON.parse(e.data) as SocketData;
+        this.mitt.emit("data", data);
+      }
+    });
+
+    this.client.addEventListener("close", (e) => {
+      globalThis.confirm(`socket已断开,code: ${e.code}, reason: ${e.reason}`);
+      clearInterval(this.timer);
     });
   }
 }
