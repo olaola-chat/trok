@@ -1,79 +1,89 @@
 import { SocketHub } from "./Hub.ts";
-import Server from "./Server.tsx";
-import type { SocketData } from "./type.ts";
+import server from "./server.tsx";
+import type { SocketData, Task } from "./type.ts";
 
 export type NotifyClient = {
   notify: (message: SocketData) => unknown;
-  release: () => void;
+  release?: () => void;
 };
 
-function isVerbose(message: SocketData) {
-  return message.type === "stream" ||
-    message.data.status! == "progress";
+function isVerbose(data: SocketData) {
+  return data.type === "stream" || data.data.status! == "progress";
 }
 
 export default class Notify {
   static async getClient(
-    notify?: string,
+    task: Task,
+    notify?: string | string[],
     verbose = false,
   ): Promise<NotifyClient> {
-    // http只通知非verbose信息
-    if (notify?.startsWith("http")) {
-      return ({
-        notify: (message: SocketData) => {
-          if (isVerbose(message)) return;
-          fetch(notify, {
-            method: "POST",
-            body: JSON.stringify(message),
-            headers: { "Content-Type": "applicatin/json" },
-          });
-        },
+    const notifies = [notify].flat().filter(Boolean) as string[];
 
-        release: () => void 0,
-      });
-    }
-
-    // websocket通知
-    if (notify?.startsWith("ws")) {
-      const socket = new WebSocket(notify);
-      return await new Promise<NotifyClient>((resolve, reject) => {
-        socket.addEventListener("open", () => {
-          resolve({
+    const clients = await Promise.all(
+      notifies.map(async (notify) => {
+        // http只通知非verbose信息
+        if (notify.startsWith("http")) {
+          if (verbose) {
+            console.warn(`http通知强制关闭verbose选项, 仅通知必要信息`);
+          }
+          return ({
             notify: (message: SocketData) => {
-              if (verbose) return socket.send(JSON.stringify(message));
               if (isVerbose(message)) return;
-              socket.send(JSON.stringify(message));
+              fetch(notify, {
+                method: "POST",
+                body: JSON.stringify(message),
+                headers: { "Content-Type": "applicatin/json" },
+              });
             },
-            release: () => void socket.close(1000, "通知完成"),
           });
-        });
-        socket.addEventListener("close", (e) => {
-          console.log(`websocket closed: code: ${e.code}; reason: ${e.reason}`);
-          if (e.code !== 1000) reject(e.reason);
-        });
-        socket.addEventListener("error", (e) => {
-          const message = e instanceof Error ? e.message : "unknown error";
-          console.log(`websocket error: ${message}`);
-        });
-      });
-    }
-
-    if (notify) throw new Error("非法的notify地址");
-
-    // 用户未配置notify
-    return {
-      notify: (message: SocketData) => {
-        if (message.data.task.from === Server.id) {
-          if (verbose) return SocketHub.broadcast(message);
-          if (isVerbose(message)) return;
-          SocketHub.broadcast(message);
-          return;
         }
-        if (verbose) return console.log(message);
-        if (isVerbose(message)) return;
-        console.log(message);
+
+        // websocket通知
+        if (notify.startsWith("ws")) {
+          const socket = new WebSocket(notify);
+          return await new Promise<NotifyClient>((resolve, reject) => {
+            socket.addEventListener("open", () => {
+              resolve({
+                notify: (message: SocketData) => {
+                  if (isVerbose(message) && !verbose) return;
+                  socket.send(JSON.stringify(message));
+                },
+                release: () => socket.close(1000, "通知完成"),
+              });
+            });
+            socket.addEventListener("close", (e) => {
+              console.log(
+                `websocket closed: code: ${e.code}; reason: ${e.reason}`,
+              );
+              if (e.code !== 1000) reject(e.reason);
+            });
+            socket.addEventListener("error", (e) => {
+              const message = e instanceof Error ? e.message : "unknown error";
+              console.log(`websocket error: ${message}`);
+            });
+          });
+        }
+
+        throw new Error(`位置notify格式: ${notify}`);
+      }),
+    );
+
+    const socketNotifyClient = {
+      notify: (data: SocketData) => SocketHub.broadcast(data),
+    };
+    const isFromLocalServer = task.from === server.id;
+    if (isFromLocalServer) clients.push(socketNotifyClient);
+
+    const consoleNotifyClient = {
+      notify: (data: SocketData) => {
+        console.log(data.type === "stream" ? data.data.data : data.data);
       },
-      release: () => void 0,
+    };
+    clients.push(consoleNotifyClient);
+
+    return {
+      notify: (data: SocketData) => clients.map((item) => item.notify(data)),
+      release: () => clients.map((item) => item.release?.()),
     };
   }
 }

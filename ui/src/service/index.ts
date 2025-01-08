@@ -4,7 +4,6 @@ import type {
   Snapshot,
   SocketData,
   Task,
-  TaskHubItem,
 } from "../../../lib/type.ts";
 import mitt from "../../../lib/mitt.ts";
 
@@ -32,7 +31,7 @@ export function useWorkspace() {
 }
 
 export function useTaskHubList() {
-  const [list, setList] = useState<TaskHubItem[]>([]);
+  const [list, setList] = useState<Task[]>([]);
   const fetchTasks = useCallback(
     () => fetch("/task").then((res) => res.json()).then(setList),
     [],

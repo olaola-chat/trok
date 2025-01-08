@@ -1,10 +1,10 @@
 {
   "name": "@trok/trok",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "license": "MIT",
   "exports": {
     ".": "./lib/cli.ts",
-    "./server": "./lib/Server.tsx",
+    "./server": "./lib/server.tsx",
     "./builder": "./lib/Builder.ts"
   },
   "imports": {

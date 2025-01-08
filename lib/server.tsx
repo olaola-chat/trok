@@ -29,10 +29,9 @@ function text(data: string, status = 200) {
   });
 }
 
-export default abstract class Server {
-  static id?: string;
-
-  static async handler(req: Request): Promise<Response> {
+export default {
+  id: globalThis.crypto.randomUUID(),
+  async fetch(req: Request): Promise<Response> {
     const { pathname } = new URL(req.url);
 
     switch (`${req.method} ${pathname}`) {
@@ -57,9 +56,8 @@ export default abstract class Server {
           origin: string;
           branch: string;
           selector: string;
-          verbose: boolean;
         };
-        TaskHub.register({ ...data, from: Server.id });
+        TaskHub.register({ ...data, from: this.id });
         return text("提交成功");
       }
 
@@ -76,7 +74,7 @@ export default abstract class Server {
           origin: data.repository.html_url,
           branch: basename(data.ref),
           selector: basename(data.compare),
-          from: Server.id,
+          from: "github",
         });
         return text("提交成功");
       }
@@ -84,24 +82,5 @@ export default abstract class Server {
       default:
         return text("Not Found", 404);
     }
-  }
-
-  static serve(
-    options: {
-      hostname?: string;
-      port?: number;
-      handler?: (req: Request) => Promise<Response>;
-    },
-  ) {
-    const { hostname = "127.0.0.1", port = 8000, handler } = options;
-
-    Deno.serve({ port, hostname }, async (req) => {
-      if (!handler) return this.handler(req);
-      const response = await handler(req);
-      if (response.status !== 404) return response;
-      return this.handler(req);
-    });
-
-    this.id = globalThis.crypto.randomUUID();
-  }
-}
+  },
+};

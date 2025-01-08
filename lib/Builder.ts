@@ -196,9 +196,9 @@ export default abstract class Builder {
     return { repository, packages, commits };
   }
 
-  static async run(task: Task, notify?: string, verbose?: boolean) {
+  static async run(task: Task, notify?: string | string[], verbose?: boolean) {
     this.currentTask = task;
-    this.notifyClient = await Notify.getClient(notify, verbose);
+    this.notifyClient = await Notify.getClient(task, notify, verbose);
 
     try {
       const { repository, packages, commits } = await this.prepareTask(task);
@@ -234,7 +234,7 @@ export default abstract class Builder {
       );
     } finally {
       this.currentTask = null;
-      this.notifyClient.release();
+      this.notifyClient.release?.();
     }
   }
 }

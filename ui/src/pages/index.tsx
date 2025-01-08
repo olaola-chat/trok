@@ -5,8 +5,8 @@ import { render } from "preact";
 import { Socket, useTaskHubList, useWorkspace } from "../service/index.ts";
 import { useEffect, useState } from "preact/hooks";
 import { useSnapshots } from "../service/index.ts";
-import type { TaskHubItem } from "../../../lib/type.ts";
 import TaskState from "./components/TaskState.tsx";
+import type { Task } from "../../../lib/type.ts";
 
 function Workspace(
   props: {
@@ -84,17 +84,17 @@ function Workspace(
   );
 }
 
-function TaskHubList(props: { list: TaskHubItem[] }) {
+function TaskHubList(props: { list: Task[] }) {
   return (
     <div className="stack fixed bottom-2 right-2">
       {props.list.map((item) => {
         return (
           <div className="shadow rounded-lg p-4 bg-base-100 border text-center text-sm">
-            {item.task.origin}
+            {item.origin}
             <span className="badge badge-primary badge-sm mx-2">
-              {item.task.branch}
+              {item.branch}
             </span>
-            <span className="kbd kbd-sm">{item.task.selector}</span>
+            <span className="kbd kbd-sm">{item.selector}</span>
           </div>
         );
       })}

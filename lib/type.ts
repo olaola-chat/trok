@@ -54,8 +54,3 @@ export type GithubWebhookBody = {
   repository: { html_url: string };
   sender: { login: string };
 };
-
-export type TaskHubItem = {
-  task: Task;
-  verbose?: boolean;
-};

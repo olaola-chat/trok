@@ -298,9 +298,9 @@ function Workspace(props) {
 function TaskHubList(props) {
   return /* @__PURE__ */ jsx2("div", { className: "stack fixed bottom-2 right-2", children: props.list.map((item) => {
     return /* @__PURE__ */ jsxs2("div", { className: "shadow rounded-lg p-4 bg-base-100 border text-center text-sm", children: [
-      item.task.origin,
-      /* @__PURE__ */ jsx2("span", { className: "badge badge-primary badge-sm mx-2", children: item.task.branch }),
-      /* @__PURE__ */ jsx2("span", { className: "kbd kbd-sm", children: item.task.selector })
+      item.origin,
+      /* @__PURE__ */ jsx2("span", { className: "badge badge-primary badge-sm mx-2", children: item.branch }),
+      /* @__PURE__ */ jsx2("span", { className: "kbd kbd-sm", children: item.selector })
     ] });
   }) });
 }
