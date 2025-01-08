@@ -1,7 +1,6 @@
 import { parseArgs } from "@std/cli/parse-args";
 import Builder from "./Builder.ts";
 import Server from "./Server.tsx";
-export { Builder, Server };
 
 const args = parseArgs(Deno.args);
 

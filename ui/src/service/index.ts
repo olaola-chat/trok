@@ -4,6 +4,7 @@ import type {
   Snapshot,
   SocketData,
   Task,
+  TaskHubItem,
 } from "../../../lib/type.ts";
 import mitt from "../../../lib/mitt.ts";
 
@@ -30,14 +31,14 @@ export function useWorkspace() {
   return { workspace, fetchWorkspace };
 }
 
-export function useTasks() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+export function useTaskHubList() {
+  const [list, setList] = useState<TaskHubItem[]>([]);
   const fetchTasks = useCallback(
-    () => fetch("/task").then((res) => res.json()).then(setTasks),
+    () => fetch("/task").then((res) => res.json()).then(setList),
     [],
   );
   useEffect(() => void fetchTasks(), []);
-  return { tasks, fetchTasks };
+  return { list, fetchTasks };
 }
 
 export class Socket {

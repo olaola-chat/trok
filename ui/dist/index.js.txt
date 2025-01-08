@@ -89,14 +89,14 @@ function useWorkspace() {
   useEffect(() => void fetchWorkspace(), []);
   return { workspace, fetchWorkspace };
 }
-function useTasks() {
-  const [tasks, setTasks] = useState([]);
+function useTaskHubList() {
+  const [list, setList] = useState([]);
   const fetchTasks = useCallback(
-    () => fetch("/task").then((res) => res.json()).then(setTasks),
+    () => fetch("/task").then((res) => res.json()).then(setList),
     []
   );
   useEffect(() => void fetchTasks(), []);
-  return { tasks, fetchTasks };
+  return { list, fetchTasks };
 }
 var Socket = class {
   static mitt = mitt();
@@ -143,7 +143,7 @@ function useSnapshots() {
 }
 
 // ui/src/pages/index.tsx
-import { useEffect as useEffect3 } from "preact/hooks";
+import { useEffect as useEffect3, useState as useState3 } from "preact/hooks";
 
 // ui/src/pages/components/TaskState.tsx
 import { useEffect as useEffect2, useState as useState2 } from "preact/hooks";
@@ -238,53 +238,69 @@ function TaskState(props) {
 import { jsx as jsx2, jsxs as jsxs2 } from "preact/jsx-runtime";
 function Workspace(props) {
   const { workspace } = useWorkspace();
-  return /* @__PURE__ */ jsx2("div", { className: "flex flex-col gap-2 w-fit", children: workspace.map((item) => {
-    return /* @__PURE__ */ jsx2(
-      "form",
-      {
-        className: "shadow bg-base-100 rounded-2xl p-2 flex flex-col gap-2 border-primary",
-        onSubmit: (e) => {
-          e.preventDefault();
-          const form = new FormData(e.currentTarget);
-          props.onCreateTask(
-            item.origin,
-            item.branch,
-            form.get("selector")
-          );
-          e.currentTarget.reset();
-        },
-        children: /* @__PURE__ */ jsxs2("div", { className: "collapse collapse-arrow border", children: [
-          /* @__PURE__ */ jsx2("input", { type: "checkbox" }),
-          /* @__PURE__ */ jsxs2("div", { className: "collapse-title", children: [
-            /* @__PURE__ */ jsx2("span", { children: item.origin }),
-            /* @__PURE__ */ jsx2("span", { className: "badge badge-primary badge ml-2", children: item.branch })
-          ] }),
-          /* @__PURE__ */ jsxs2("div", { className: "collapse-content", children: [
-            /* @__PURE__ */ jsx2("div", { className: "flex flex-wrap justify-center gap-1", children: item.packages.map((item2) => /* @__PURE__ */ jsx2(
-              "input",
-              {
-                type: "radio",
-                "aria-label": item2,
-                name: "selector",
-                className: "btn btn-xs btn-outline",
-                value: item2
-              },
-              item2
-            )) }),
-            /* @__PURE__ */ jsx2("button", { className: "btn btn-primary block btn-wide mt-5 mx-auto btn-sm", children: "\u63D0\u4EA4\u4EFB\u52A1" })
+  const [verbose, setVerbose] = useState3(false);
+  return /* @__PURE__ */ jsxs2("div", { className: "flex flex-col gap-2 w-fit", children: [
+    /* @__PURE__ */ jsx2("div", { className: "form-control w-full", children: /* @__PURE__ */ jsxs2("label", { className: "label cursor-pointer", children: [
+      /* @__PURE__ */ jsx2("span", { className: "label-text text-bold", children: "\u6253\u5370\u8BE6\u7EC6\u4FE1\u606F" }),
+      /* @__PURE__ */ jsx2(
+        "input",
+        {
+          type: "checkbox",
+          onChange: () => setVerbose(!verbose),
+          className: "toggle toggle-primary",
+          checked: verbose
+        }
+      )
+    ] }) }),
+    workspace.map((item) => {
+      return /* @__PURE__ */ jsx2(
+        "form",
+        {
+          className: "shadow bg-base-100 rounded-2xl p-2 flex flex-col gap-2 border-primary",
+          onSubmit: (e) => {
+            e.preventDefault();
+            const form = new FormData(e.currentTarget);
+            props.onCreateTask(
+              item.origin,
+              item.branch,
+              form.get("selector"),
+              verbose
+            );
+            e.currentTarget.reset();
+          },
+          children: /* @__PURE__ */ jsxs2("div", { className: "collapse collapse-arrow border", children: [
+            /* @__PURE__ */ jsx2("input", { type: "checkbox" }),
+            /* @__PURE__ */ jsxs2("div", { className: "collapse-title", children: [
+              /* @__PURE__ */ jsx2("span", { children: item.origin }),
+              /* @__PURE__ */ jsx2("span", { className: "badge badge-primary badge ml-2", children: item.branch })
+            ] }),
+            /* @__PURE__ */ jsxs2("div", { className: "collapse-content", children: [
+              /* @__PURE__ */ jsx2("div", { className: "flex flex-wrap justify-center gap-1", children: item.packages.map((item2) => /* @__PURE__ */ jsx2(
+                "input",
+                {
+                  type: "radio",
+                  "aria-label": item2,
+                  name: "selector",
+                  className: "btn btn-xs btn-outline",
+                  value: item2
+                },
+                item2
+              )) }),
+              /* @__PURE__ */ jsx2("button", { className: "btn btn-primary block btn-wide mt-5 mx-auto btn-sm", children: "\u63D0\u4EA4\u4EFB\u52A1" })
+            ] })
           ] })
-        ] })
-      },
-      item.path
-    );
-  }) });
+        },
+        item.path
+      );
+    })
+  ] });
 }
-function TaskList(props) {
-  return /* @__PURE__ */ jsx2("div", { className: "stack fixed bottom-2 right-2", children: props.tasks.map((item) => {
+function TaskHubList(props) {
+  return /* @__PURE__ */ jsx2("div", { className: "stack fixed bottom-2 right-2", children: props.list.map((item) => {
     return /* @__PURE__ */ jsxs2("div", { className: "shadow rounded-lg p-4 bg-base-100 border text-center text-sm", children: [
-      item.origin,
-      /* @__PURE__ */ jsx2("span", { className: "badge badge-primary badge-sm mx-2", children: item.branch }),
-      /* @__PURE__ */ jsx2("span", { className: "kbd kbd-sm", children: item.selector })
+      item.task.origin,
+      /* @__PURE__ */ jsx2("span", { className: "badge badge-primary badge-sm mx-2", children: item.task.branch }),
+      /* @__PURE__ */ jsx2("span", { className: "kbd kbd-sm", children: item.task.selector })
     ] });
   }) });
 }
@@ -293,7 +309,7 @@ function Main() {
   const snapShotGroups = Object.values(
     Object.groupBy(snapshots, (item) => item.task.id)
   );
-  const { tasks, fetchTasks } = useTasks();
+  const { list, fetchTasks } = useTaskHubList();
   useEffect3(() => {
     Socket.mitt.on("data", (data) => {
       if (data.type === "snapshot") void fetchTasks();
@@ -303,13 +319,14 @@ function Main() {
     /* @__PURE__ */ jsx2("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll max-w-96", children: /* @__PURE__ */ jsx2(
       Workspace,
       {
-        onCreateTask: async (origin, branch, selector) => {
+        onCreateTask: async (origin, branch, selector, verbose) => {
           await fetch("/task", {
             method: "POST",
             body: JSON.stringify({
               origin,
               branch,
-              selector
+              selector,
+              verbose
             })
           });
           fetchTasks();
@@ -324,7 +341,7 @@ function Main() {
         children: snapShotGroups.map((item) => /* @__PURE__ */ jsx2(TaskState, { snapshots: item }))
       }
     ),
-    /* @__PURE__ */ jsx2(TaskList, { tasks })
+    /* @__PURE__ */ jsx2(TaskHubList, { list })
   ] });
 }
 render(/* @__PURE__ */ jsx2(Main, {}), document.getElementById("root"));

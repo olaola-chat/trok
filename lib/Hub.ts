@@ -1,4 +1,4 @@
-import type { Snapshot, SocketData, Task } from "./type.ts";
+import type { Snapshot, SocketData, Task, TaskHubItem } from "./type.ts";
 import Builder from "./Builder.ts";
 
 export abstract class SnapshotHub {
@@ -58,17 +58,18 @@ export abstract class SocketHub {
 }
 
 export abstract class TaskHub {
-  static tasks: Task[] = [];
+  static list: TaskHubItem[] = [];
 
-  static register(taskOptions: Omit<Task, "id">) {
-    this.tasks.push({ ...taskOptions, id: globalThis.crypto.randomUUID() });
+  static register(taskOptions: Omit<Task, "id">, verbose = true) {
+    const task = { ...taskOptions, id: globalThis.crypto.randomUUID() };
+    this.list.push({ verbose, task });
     this.dispatch();
   }
 
   static async dispatch() {
     if (!Builder.currentTask) {
-      const task = this.tasks.shift();
-      if (task) await Builder.run(task);
+      const item = this.list.shift();
+      if (item) await Builder.run(item.task, undefined, item.verbose);
     }
     setTimeout(() => this.dispatch(), 3000);
   }

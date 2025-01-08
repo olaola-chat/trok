@@ -2,20 +2,38 @@
 /** @jsxImportSource preact */
 
 import { render } from "preact";
-import { Socket, useTasks, useWorkspace } from "../service/index.ts";
-import { useEffect } from "preact/hooks";
+import { Socket, useTaskHubList, useWorkspace } from "../service/index.ts";
+import { useEffect, useState } from "preact/hooks";
 import { useSnapshots } from "../service/index.ts";
-import type { Task } from "../../../lib/type.ts";
+import type { TaskHubItem } from "../../../lib/type.ts";
 import TaskState from "./components/TaskState.tsx";
 
 function Workspace(
   props: {
-    onCreateTask: (origin: string, branch: string, selector: string) => void;
+    onCreateTask: (
+      origin: string,
+      branch: string,
+      selector: string,
+      verbose: boolean,
+    ) => void;
   },
 ) {
   const { workspace } = useWorkspace();
+  const [verbose, setVerbose] = useState(false);
   return (
     <div className="flex flex-col gap-2 w-fit">
+      <div className="form-control w-full">
+        <label className="label cursor-pointer">
+          <span className="label-text text-bold">打印详细信息</span>
+          <input
+            type="checkbox"
+            onChange={() => setVerbose(!verbose)}
+            className="toggle toggle-primary"
+            checked={verbose}
+          />
+        </label>
+      </div>
+
       {workspace.map((item) => {
         return (
           <form
@@ -28,6 +46,7 @@ function Workspace(
                 item.origin,
                 item.branch,
                 form.get("selector") as string,
+                verbose,
               );
               e.currentTarget.reset();
             }}
@@ -65,17 +84,17 @@ function Workspace(
   );
 }
 
-function TaskList(props: { tasks: Task[] }) {
+function TaskHubList(props: { list: TaskHubItem[] }) {
   return (
     <div className="stack fixed bottom-2 right-2">
-      {props.tasks.map((item) => {
+      {props.list.map((item) => {
         return (
           <div className="shadow rounded-lg p-4 bg-base-100 border text-center text-sm">
-            {item.origin}
+            {item.task.origin}
             <span className="badge badge-primary badge-sm mx-2">
-              {item.branch}
+              {item.task.branch}
             </span>
-            <span className="kbd kbd-sm">{item.selector}</span>
+            <span className="kbd kbd-sm">{item.task.selector}</span>
           </div>
         );
       })}
@@ -88,8 +107,7 @@ function Main() {
   const snapShotGroups = Object.values(
     Object.groupBy(snapshots, (item) => item.task.id),
   );
-
-  const { tasks, fetchTasks } = useTasks();
+  const { list, fetchTasks } = useTaskHubList();
 
   useEffect(() => {
     Socket.mitt.on("data", (data) => {
@@ -101,26 +119,28 @@ function Main() {
     <div className="flex gap-2 w-screen">
       <div className="p-2 bg-base-200 h-screen overflow-y-scroll max-w-96">
         <Workspace
-          onCreateTask={async (origin, branch, selector) => {
+          onCreateTask={async (origin, branch, selector, verbose) => {
             await fetch("/task", {
               method: "POST",
               body: JSON.stringify({
                 origin,
                 branch,
                 selector,
+                verbose,
               }),
             });
             fetchTasks();
           }}
         />
       </div>
+
       <div
         className="p-2 h-screen overflow-y-scroll grow"
         ref={(el) => el?.scrollTo(0, el.scrollHeight)}
       >
         {snapShotGroups.map((item) => <TaskState snapshots={item!} />)}
       </div>
-      <TaskList tasks={tasks} />
+      <TaskHubList list={list} />
     </div>
   );
 }

@@ -4,7 +4,7 @@
 import { basename } from "@std/path";
 import { render } from "preact-render-to-string";
 import Index from "../ui/index.server.tsx";
-import type { GithubWebhookBody, Task } from "./type.ts";
+import type { GithubWebhookBody } from "./type.ts";
 import Builder from "./Builder.ts";
 import { SnapshotHub, SocketHub, TaskHub } from "./Hub.ts";
 
@@ -50,14 +50,16 @@ export default abstract class Server {
       }
 
       case "GET /task":
-        return json(TaskHub.tasks);
+        return json(TaskHub.list);
 
       case "POST /task": {
-        const data = await req.json() as Omit<Task, "id">;
-        TaskHub.register({
-          ...data,
-          from: Server.id,
-        });
+        const data = await req.json() as {
+          origin: string;
+          branch: string;
+          selector: string;
+          verbose: boolean;
+        };
+        TaskHub.register({ ...data, from: Server.id });
         return text("提交成功");
       }
 
