@@ -55,10 +55,6 @@ export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function getRandomString() {
-  return Math.random().toString(36).slice(2);
-}
-
 export function getRepositoryInfo(repositoryPath: string) {
   const { stdout: remoteStdout } = new Deno.Command("git", {
     cwd: repositoryPath,
@@ -185,7 +181,6 @@ async function readStream(
     const { value, done } = await reader.read();
     const streamData = decoder.decode(value);
     data += streamData;
-    console.log(streamData);
     onStreamData(streamData);
     if (done) break;
   }

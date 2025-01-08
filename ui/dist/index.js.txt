@@ -113,8 +113,8 @@ var Socket = class {
       }
     });
     this.client.addEventListener("close", (e) => {
-      globalThis.confirm(`socket\u5DF2\u65AD\u5F00,code: ${e.code}, reason: ${e.reason}`);
       clearInterval(this.timer);
+      if (globalThis.confirm(`socket\u5DF2\u65AD\u5F00,code: ${e.code}, reason: ${e.reason}`)) globalThis.location.reload();
     });
   }
 };
@@ -177,7 +177,7 @@ function TaskState(props) {
   useEffect2(() => {
     Socket.mitt.on("data", (data) => {
       if (data.type === "stream") {
-        if (data.data.taskId === taskState.task.id) {
+        if (data.data.task.id === taskState.task.id) {
           setStreamData((value) => [...value, data.data]);
         }
       }

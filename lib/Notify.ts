@@ -1,3 +1,5 @@
+import { SocketHub } from "./Hub.ts";
+import Server from "./Server.tsx";
 import type { SocketData } from "./type.ts";
 
 export type NotifyClient = {
@@ -6,27 +8,34 @@ export type NotifyClient = {
 };
 
 export default class Notify {
-  static async getClient(notify?: string): Promise<NotifyClient> {
-    // 无处通知, 打印到控制台
-    if (!notify) {
+  static verbose = false;
+  static notify: string;
+  static async getClient(): Promise<NotifyClient> {
+    if (!this.notify) {
       return {
         notify: (message: SocketData) => {
-          if (message.type === "stream") return;
-          console.log(message);
+          if (message.data.task.from === Server.id) {
+            SocketHub.broadcast(message);
+          } else {
+            // 无处通知, 打印到控制台
+            console.log(
+              message.type === "stream" ? message.data.data : message,
+            );
+          }
         },
         release: () => void 0,
       };
     }
 
     // http通知
-    if (notify.startsWith("http")) {
+    if (this.notify.startsWith("http")) {
       return ({
         notify: (message: SocketData) => {
           // http简单通知下
           if (
             message.type === "snapshot" && message.data.status !== "progress"
           ) {
-            void fetch(notify, {
+            void fetch(this.notify, {
               method: "POST",
               body: JSON.stringify(message),
               headers: { "Content-Type": "applicatin/json" },
@@ -39,8 +48,8 @@ export default class Notify {
     }
 
     // websocket通知
-    if (notify.startsWith("ws")) {
-      const socket = new WebSocket(notify);
+    if (this.notify.startsWith("ws")) {
+      const socket = new WebSocket(this.notify);
       return await new Promise<NotifyClient>((resolve, reject) => {
         socket.addEventListener("open", () => {
           resolve({

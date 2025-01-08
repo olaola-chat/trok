@@ -10,11 +10,11 @@ export type Task = {
   origin: string;
   branch: string;
   selector: string;
-  notify?: string;
+  from?: string;
 };
 
 export type StreamData = {
-  taskId: Task["id"];
+  task: Task;
   packagePath?: string;
   data: string;
 };

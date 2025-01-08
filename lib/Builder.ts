@@ -106,7 +106,7 @@ export default abstract class Builder {
         : ["install", "--frozen-lockfile"],
       onStreamData: (data) => {
         this.notifyClient.notify(
-          stream({ taskId: this.currentTask!.id, data, packagePath }),
+          stream({ task: this.currentTask!, data, packagePath }),
         );
       },
     });
@@ -123,7 +123,7 @@ export default abstract class Builder {
       args: ["run", "build"],
       onStreamData: (data) => {
         this.notifyClient.notify(
-          stream({ taskId: this.currentTask!.id, data, packagePath }),
+          stream({ task: this.currentTask!, data, packagePath }),
         );
       },
     });
@@ -136,7 +136,7 @@ export default abstract class Builder {
       args: ["status", "-s", repository.path],
       onStreamData: (data) => {
         this.notifyClient.notify(
-          stream({ taskId: this.currentTask!.id, data }),
+          stream({ task: this.currentTask!, data }),
         );
       },
     });
@@ -175,7 +175,7 @@ export default abstract class Builder {
       args: ["pull"],
       onStreamData: (data) => {
         this.notifyClient.notify(
-          stream({ taskId: this.currentTask!.id, data }),
+          stream({ task: this.currentTask!, data }),
         );
       },
     });
@@ -198,7 +198,7 @@ export default abstract class Builder {
 
   static async run(task: Task) {
     this.currentTask = task;
-    this.notifyClient = await Notify.getClient(task.notify);
+    this.notifyClient = await Notify.getClient();
 
     try {
       const { repository, packages, commits } = await this.prepareTask(task);

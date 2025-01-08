@@ -1,31 +1,35 @@
 import { parseArgs } from "@std/cli/parse-args";
 import Builder from "./lib/Builder.ts";
 import Server from "./lib/Server.tsx";
-import { getRandomString } from "./lib/util.ts";
+import Notify from "./lib/Notify.ts";
 export { Builder, Server };
 
 const args = parseArgs(Deno.args);
 
-const [command] = args._;
+function trimBoolArg(argName: string, defaultValue?: string) {
+  return args[argName] === true ? undefined : args[argName] ?? defaultValue;
+}
 
-if (command === "serve") Server.serve(args.port ?? 8000);
+Notify.verbose = args.verbose;
+Notify.notify = trimBoolArg("notify");
+
+const [command] = args._;
+if (!command || args.help || args.h) {
+  // TODO: show help
+}
+
+if (command === "serve") {
+  const port = Number(args.port ?? 8000);
+  Server.serve({ port });
+}
+
 if (command === "build") {
   const [{ origin, branch }] = Builder.workspace;
 
-  const selector = (args.selector === true ? undefined : args.selector) ??
-    "HEAD^...HEAD";
-
-  const notify = args.notify === true ? undefined : args.notify;
-
   Builder.run({
-    id: getRandomString(),
-    origin: args.origin ?? origin,
-    branch: args.branch ?? branch,
-    selector,
-    notify,
+    id: globalThis.crypto.randomUUID(),
+    origin: trimBoolArg("origin", origin),
+    branch: trimBoolArg("branch", branch),
+    selector: trimBoolArg("selector", "HEAD^...HEAD"),
   });
-}
-
-if (!command || args.help || args.h) {
-  // TODO: show help
 }

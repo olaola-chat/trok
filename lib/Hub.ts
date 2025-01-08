@@ -29,6 +29,14 @@ type SocketClient = {
 
 export abstract class SocketHub {
   static clients: SocketClient[] = [];
+
+  static broadcast(data: SocketData) {
+    if (data.type === "snapshot") SnapshotHub.registry(data.data);
+    this.clients.filter((item) => !item.ua.startsWith("Deno")).forEach(
+      (item) => item.socket.send(JSON.stringify(data)),
+    );
+  }
+
   static registry(client: SocketClient) {
     this.clients.push(client);
 
@@ -43,13 +51,7 @@ export abstract class SocketHub {
       "message",
       (e) => {
         if (e.data === "PING") client.socket.send("PONG");
-        else {
-          const data = JSON.parse(e.data) as SocketData;
-          if (data.type === "snapshot") SnapshotHub.registry(data.data);
-          this.clients.filter((item) => !item.ua.startsWith("Deno")).forEach(
-            (item) => item.socket.send(e.data),
-          );
-        }
+        else this.broadcast(JSON.parse(e.data) as SocketData);
       },
     );
   }
@@ -58,8 +60,8 @@ export abstract class SocketHub {
 export abstract class TaskHub {
   static tasks: Task[] = [];
 
-  static register(task: Task) {
-    this.tasks.push(task);
+  static register(taskOptions: Omit<Task, "id">) {
+    this.tasks.push({ ...taskOptions, id: globalThis.crypto.randomUUID() });
     this.dispatch();
   }
 

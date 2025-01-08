@@ -43,7 +43,7 @@ export default function TaskState(props: { snapshots: Snapshot[] }) {
   useEffect(() => {
     Socket.mitt.on("data", (data) => {
       if (data.type === "stream") {
-        if (data.data.taskId === taskState.task.id) {
+        if (data.data.task.id === taskState.task.id) {
           setStreamData((value) => [...value, data.data]);
         }
       }
