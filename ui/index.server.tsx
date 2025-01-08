@@ -1,24 +1,7 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource preact */
 
-async function getScriptContent() {
-  const url = new URL("dist/index.js.txt", import.meta.url);
-  if (url.protocol.startsWith("http")) {
-    return await fetch(url).then((res) => res.text());
-  }
-  return Deno.readTextFileSync(url);
-}
-
-const scriptContent = await getScriptContent();
-
-const importMap = {
-  "imports": {
-    "preact": "https://esm.sh/preact@10.23.1",
-    "preact/": "https://esm.sh/preact@10.23.1/",
-  },
-};
-
-export default function Index() {
+export default function Document(props: { root: string }) {
   return (
     <html>
       <head>
@@ -31,7 +14,14 @@ export default function Index() {
 
         <script
           type="importmap"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(importMap) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "imports": {
+                "preact": "https://esm.sh/preact@10.23.1",
+                "preact/": "https://esm.sh/preact@10.23.1/",
+              },
+            }),
+          }}
         >
         </script>
       </head>
@@ -39,7 +29,9 @@ export default function Index() {
         <div id="root" />
         <script
           type="module"
-          dangerouslySetInnerHTML={{ __html: scriptContent }}
+          dangerouslySetInnerHTML={{
+            __html: props.root,
+          }}
         >
         </script>
       </body>

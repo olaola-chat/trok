@@ -1,6 +1,6 @@
 {
   "name": "@trok/trok",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "license": "MIT",
   "exports": {
     ".": "./lib/cli.ts",
@@ -16,7 +16,7 @@
   },
 
   "tasks": {
-    "buildUI": "rm -rf ./ui/dist && esbuild ui/src/pages/index.tsx --external:preact --bundle --format=esm --outfile=ui/dist/index.js.txt"
+    "buildUI": "rm -rf ./ui/dist && esbuild ui/src/routes/main.tsx --external:preact --bundle --format=esm --outfile=ui/dist/main.js.txt"
   },
 
   "fmt": {

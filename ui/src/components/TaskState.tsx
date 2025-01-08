@@ -2,8 +2,8 @@
 /** @jsxImportSource preact */
 
 import { useEffect, useState } from "preact/hooks";
-import type { ExecLog, Snapshot, StreamData } from "../../../../lib/type.ts";
-import { Socket } from "../../service/index.ts";
+import type { ExecLog, Snapshot, StreamData } from "../../../lib/type.ts";
+import { Socket } from "../service/index.ts";
 
 function Code(
   props: {

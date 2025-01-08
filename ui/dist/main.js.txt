@@ -1,4 +1,4 @@
-// ui/src/pages/index.tsx
+// ui/src/routes/main.tsx
 import { render } from "preact";
 
 // ui/src/service/index.ts
@@ -142,10 +142,10 @@ function useSnapshots() {
   return snapshots;
 }
 
-// ui/src/pages/index.tsx
-import { useEffect as useEffect3, useState as useState3 } from "preact/hooks";
+// ui/src/components/Main.tsx
+import { useEffect as useEffect3 } from "preact/hooks";
 
-// ui/src/pages/components/TaskState.tsx
+// ui/src/components/TaskState.tsx
 import { useEffect as useEffect2, useState as useState2 } from "preact/hooks";
 import { Fragment, jsx, jsxs } from "preact/jsx-runtime";
 function Code(props) {
@@ -234,76 +234,66 @@ function TaskState(props) {
   ] }) });
 }
 
-// ui/src/pages/index.tsx
+// ui/src/components/Workspace.tsx
 import { jsx as jsx2, jsxs as jsxs2 } from "preact/jsx-runtime";
 function Workspace(props) {
   const { workspace } = useWorkspace();
-  const [verbose, setVerbose] = useState3(false);
-  return /* @__PURE__ */ jsxs2("div", { className: "flex flex-col gap-2 w-fit", children: [
-    /* @__PURE__ */ jsx2("div", { className: "form-control w-full", children: /* @__PURE__ */ jsxs2("label", { className: "label cursor-pointer", children: [
-      /* @__PURE__ */ jsx2("span", { className: "label-text text-bold", children: "\u6253\u5370\u8BE6\u7EC6\u4FE1\u606F" }),
-      /* @__PURE__ */ jsx2(
-        "input",
-        {
-          type: "checkbox",
-          onChange: () => setVerbose(!verbose),
-          className: "toggle toggle-primary",
-          checked: verbose
-        }
-      )
-    ] }) }),
-    workspace.map((item) => {
-      return /* @__PURE__ */ jsx2(
-        "form",
-        {
-          className: "shadow bg-base-100 rounded-2xl p-2 flex flex-col gap-2 border-primary",
-          onSubmit: (e) => {
-            e.preventDefault();
-            const form = new FormData(e.currentTarget);
-            props.onCreateTask(
-              item.origin,
-              item.branch,
-              form.get("selector"),
-              verbose
-            );
-            e.currentTarget.reset();
-          },
-          children: /* @__PURE__ */ jsxs2("div", { className: "collapse collapse-arrow border", children: [
-            /* @__PURE__ */ jsx2("input", { type: "checkbox" }),
-            /* @__PURE__ */ jsxs2("div", { className: "collapse-title", children: [
-              /* @__PURE__ */ jsx2("span", { children: item.origin }),
-              /* @__PURE__ */ jsx2("span", { className: "badge badge-primary badge ml-2", children: item.branch })
-            ] }),
-            /* @__PURE__ */ jsxs2("div", { className: "collapse-content", children: [
-              /* @__PURE__ */ jsx2("div", { className: "flex flex-wrap justify-center gap-1", children: item.packages.map((item2) => /* @__PURE__ */ jsx2(
-                "input",
-                {
-                  type: "radio",
-                  "aria-label": item2,
-                  name: "selector",
-                  className: "btn btn-xs btn-outline",
-                  value: item2
-                },
-                item2
-              )) }),
-              /* @__PURE__ */ jsx2("button", { className: "btn btn-primary block btn-wide mt-5 mx-auto btn-sm", children: "\u63D0\u4EA4\u4EFB\u52A1" })
-            ] })
-          ] })
+  return /* @__PURE__ */ jsx2("div", { className: "flex flex-col gap-2 w-fit", children: workspace.map((item) => {
+    return /* @__PURE__ */ jsx2(
+      "form",
+      {
+        className: "shadow bg-base-100 rounded-2xl p-2 flex flex-col gap-2 border-primary",
+        onSubmit: (e) => {
+          e.preventDefault();
+          const form = new FormData(e.currentTarget);
+          props.onCreateTask(
+            item.origin,
+            item.branch,
+            form.get("selector")
+          );
+          e.currentTarget.reset();
         },
-        item.path
-      );
-    })
-  ] });
+        children: /* @__PURE__ */ jsxs2("div", { className: "collapse collapse-arrow border", children: [
+          /* @__PURE__ */ jsx2("input", { type: "checkbox" }),
+          /* @__PURE__ */ jsxs2("div", { className: "collapse-title", children: [
+            /* @__PURE__ */ jsx2("span", { children: item.origin }),
+            /* @__PURE__ */ jsx2("span", { className: "badge badge-primary badge ml-2", children: item.branch })
+          ] }),
+          /* @__PURE__ */ jsxs2("div", { className: "collapse-content", children: [
+            /* @__PURE__ */ jsx2("div", { className: "flex flex-wrap justify-center gap-1", children: item.packages.map((item2) => /* @__PURE__ */ jsx2(
+              "input",
+              {
+                type: "radio",
+                "aria-label": item2,
+                name: "selector",
+                className: "btn btn-xs btn-outline",
+                value: item2
+              },
+              item2
+            )) }),
+            /* @__PURE__ */ jsx2("button", { className: "btn btn-primary block btn-wide mt-5 mx-auto btn-sm", children: "\u63D0\u4EA4\u4EFB\u52A1" })
+          ] })
+        ] })
+      },
+      item.path
+    );
+  }) });
 }
+
+// ui/src/components/TaskHub.tsx
+import { jsx as jsx3, jsxs as jsxs3 } from "preact/jsx-runtime";
 function TaskHubList(props) {
-  return /* @__PURE__ */ jsx2("div", { className: "stack fixed bottom-2 right-2", children: props.list.map((item) => {
-    return /* @__PURE__ */ jsxs2("div", { className: "shadow rounded-lg p-4 bg-base-100 border text-center text-sm", children: [
+  return /* @__PURE__ */ jsx3("div", { className: "stack fixed bottom-2 right-2", children: props.list.map((item) => {
+    return /* @__PURE__ */ jsxs3("div", { className: "shadow rounded-lg p-4 bg-base-100 border text-center text-sm", children: [
       item.origin,
-      /* @__PURE__ */ jsx2("span", { className: "badge badge-primary badge-sm mx-2", children: item.branch }),
-      /* @__PURE__ */ jsx2("span", { className: "kbd kbd-sm", children: item.selector })
+      /* @__PURE__ */ jsx3("span", { className: "badge badge-primary badge-sm mx-2", children: item.branch }),
+      /* @__PURE__ */ jsx3("span", { className: "kbd kbd-sm", children: item.selector })
     ] });
   }) });
 }
+
+// ui/src/components/Main.tsx
+import { jsx as jsx4, jsxs as jsxs4 } from "preact/jsx-runtime";
 function Main() {
   const snapshots = useSnapshots();
   const snapShotGroups = Object.values(
@@ -315,33 +305,31 @@ function Main() {
       if (data.type === "snapshot") void fetchTasks();
     });
   }, []);
-  return /* @__PURE__ */ jsxs2("div", { className: "flex gap-2 w-screen", children: [
-    /* @__PURE__ */ jsx2("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll max-w-96", children: /* @__PURE__ */ jsx2(
+  return /* @__PURE__ */ jsxs4("div", { className: "flex gap-2 w-screen", children: [
+    /* @__PURE__ */ jsx4("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll max-w-96", children: /* @__PURE__ */ jsx4(
       Workspace,
       {
-        onCreateTask: async (origin, branch, selector, verbose) => {
+        onCreateTask: async (origin, branch, selector) => {
           await fetch("/task", {
             method: "POST",
-            body: JSON.stringify({
-              origin,
-              branch,
-              selector,
-              verbose
-            })
+            body: JSON.stringify({ origin, branch, selector })
           });
           fetchTasks();
         }
       }
     ) }),
-    /* @__PURE__ */ jsx2(
+    /* @__PURE__ */ jsx4(
       "div",
       {
         className: "p-2 h-screen overflow-y-scroll grow",
         ref: (el) => el?.scrollTo(0, el.scrollHeight),
-        children: snapShotGroups.map((item) => /* @__PURE__ */ jsx2(TaskState, { snapshots: item }))
+        children: snapShotGroups.map((item) => /* @__PURE__ */ jsx4(TaskState, { snapshots: item }))
       }
     ),
-    /* @__PURE__ */ jsx2(TaskHubList, { list })
+    /* @__PURE__ */ jsx4(TaskHubList, { list })
   ] });
 }
-render(/* @__PURE__ */ jsx2(Main, {}), document.getElementById("root"));
+
+// ui/src/routes/main.tsx
+import { jsx as jsx5 } from "preact/jsx-runtime";
+render(/* @__PURE__ */ jsx5(Main, {}), document.getElementById("root"));

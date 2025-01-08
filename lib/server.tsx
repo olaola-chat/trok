@@ -3,7 +3,7 @@
 
 import { basename } from "@std/path";
 import { render } from "preact-render-to-string";
-import Index from "../ui/index.server.tsx";
+import Document from "../ui/index.server.tsx";
 import type { GithubWebhookBody } from "./type.ts";
 import Builder from "./Builder.ts";
 import { SnapshotHub, SocketHub, TaskHub } from "./Hub.ts";
@@ -29,6 +29,14 @@ function text(data: string, status = 200) {
   });
 }
 
+async function route(path: string) {
+  const url = new URL(`../ui/dist/${path}.js.txt`, import.meta.url);
+  if (url.protocol.startsWith("http")) {
+    return await fetch(url).then((res) => res.text());
+  }
+  return Deno.readTextFileSync(url);
+}
+
 export default {
   id: globalThis.crypto.randomUUID(),
   async fetch(req: Request): Promise<Response> {
@@ -45,7 +53,7 @@ export default {
           );
           return response;
         }
-        return html(render(<Index />));
+        return html(render(<Document root={await route("main")} />));
       }
 
       case "GET /task":
