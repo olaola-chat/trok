@@ -1,4 +1,3 @@
 TODO: 
-- 标识外部信息源
+- 标识内部信息源
 - 身份验证
-- wrap deno bun bin

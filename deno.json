@@ -1,8 +1,12 @@
 {
   "name": "@trok/trok",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "license": "MIT",
-  "exports": "./mod.ts",
+  "exports": {
+    ".": "./lib/cli.ts",
+    "./server": "./lib/Server.tsx",
+    "./builder": "./lib/Builder.ts"
+  },
   "imports": {
     "@std/cli": "jsr:@std/cli@^1.0.9",
     "@std/path": "jsr:@std/path@^1.0.8",

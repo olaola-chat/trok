@@ -7,40 +7,26 @@ export type NotifyClient = {
   release: () => void;
 };
 
-export default class Notify {
-  static verbose = false;
-  static notify: string;
-  static async getClient(): Promise<NotifyClient> {
-    if (!this.notify) {
-      return {
-        notify: (message: SocketData) => {
-          if (message.data.task.from === Server.id) {
-            SocketHub.broadcast(message);
-          } else {
-            // 无处通知, 打印到控制台
-            console.log(
-              message.type === "stream" ? message.data.data : message,
-            );
-          }
-        },
-        release: () => void 0,
-      };
-    }
+function isVerbose(message: SocketData) {
+  return message.type === "stream" ||
+    message.data.status! == "progress";
+}
 
-    // http通知
-    if (this.notify.startsWith("http")) {
+export default class Notify {
+  static async getClient(
+    notify?: string,
+    verbose = false,
+  ): Promise<NotifyClient> {
+    // http只通知非verbose信息
+    if (notify?.startsWith("http")) {
       return ({
         notify: (message: SocketData) => {
-          // http简单通知下
-          if (
-            message.type === "snapshot" && message.data.status !== "progress"
-          ) {
-            void fetch(this.notify, {
-              method: "POST",
-              body: JSON.stringify(message),
-              headers: { "Content-Type": "applicatin/json" },
-            });
-          } else console.log(message);
+          if (isVerbose(message)) return;
+          fetch(notify, {
+            method: "POST",
+            body: JSON.stringify(message),
+            headers: { "Content-Type": "applicatin/json" },
+          });
         },
 
         release: () => void 0,
@@ -48,35 +34,46 @@ export default class Notify {
     }
 
     // websocket通知
-    if (this.notify.startsWith("ws")) {
-      const socket = new WebSocket(this.notify);
+    if (notify?.startsWith("ws")) {
+      const socket = new WebSocket(notify);
       return await new Promise<NotifyClient>((resolve, reject) => {
         socket.addEventListener("open", () => {
           resolve({
             notify: (message: SocketData) => {
-              void socket.send(JSON.stringify(message));
+              if (verbose) return socket.send(JSON.stringify(message));
+              if (isVerbose(message)) return;
+              socket.send(JSON.stringify(message));
             },
-            release: () => void socket.close(1000),
+            release: () => void socket.close(1000, "通知完成"),
           });
         });
         socket.addEventListener("close", (e) => {
-          /**
-           * e.code always 1005
-           * @see https://github.com/denoland/deno/issues/27566
-           */
           console.log(`websocket closed: code: ${e.code}; reason: ${e.reason}`);
           if (e.code !== 1000) reject(e.reason);
         });
         socket.addEventListener("error", (e) => {
-          console.log(
-            `websocket error: ${
-              e instanceof Error ? e.message : "unknown error"
-            }`,
-          );
+          const message = e instanceof Error ? e.message : "unknown error";
+          console.log(`websocket error: ${message}`);
         });
       });
     }
 
-    throw new Error("非法的notify地址");
+    if (notify) throw new Error("非法的notify地址");
+
+    // 用户未配置notify
+    return {
+      notify: (message: SocketData) => {
+        if (message.data.task.from === Server.id) {
+          if (verbose) return SocketHub.broadcast(message);
+          if (isVerbose(message)) return;
+          SocketHub.broadcast(message);
+          return;
+        }
+        if (verbose) return console.log(message);
+        if (isVerbose(message)) return;
+        console.log(message);
+      },
+      release: () => void 0,
+    };
   }
 }
