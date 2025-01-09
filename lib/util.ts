@@ -166,7 +166,7 @@ export async function streamExec(
     readStream(process.stderr, options.onStreamData),
     process.status,
   ]).finally(() => clearTimeout(timer));
-  console.log(success, command);
+  console.log(success, command, options.args);
   if (!success) throw { stderr, stdout, signal };
   return { stderr, stdout };
 }

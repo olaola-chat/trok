@@ -1,11 +1,11 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource preact */
 
-import { Socket, useTaskHubList } from "../service/index.ts";
+import { Socket, useTaskHubList, useWorkspace } from "../service/index.ts";
 import { useEffect } from "preact/hooks";
 import { useSnapshots } from "../service/index.ts";
 import TaskState from "./TaskState.tsx";
-import Workspace from "./Workspace.tsx";
+import Repo from "./Repo.tsx";
 import { TaskHubList } from "./TaskHub.tsx";
 
 export default function Main() {
@@ -14,6 +14,7 @@ export default function Main() {
     Object.groupBy(snapshots, (item) => item.task.id),
   );
   const { list, fetchTasks } = useTaskHubList();
+  const { workspace } = useWorkspace();
 
   useEffect(() => {
     Socket.mitt.on("data", (data) => {
@@ -23,17 +24,24 @@ export default function Main() {
 
   return (
     <div className="flex gap-2 w-screen">
-      <div className="p-2 bg-base-200 h-screen overflow-y-scroll max-w-96">
-        <Workspace
-          onCreateTask={async (origin, branch, selector) => {
-            await fetch("/task", {
-              method: "POST",
-              body: JSON.stringify({ origin, branch, selector }),
-            });
-            fetchTasks();
-          }}
-        />
-      </div>
+      {workspace.length
+        ? (
+          <div className="p-2 bg-base-200 h-screen overflow-y-scroll max-w-96">
+            {workspace.map((item) => (
+              <Repo
+                repo={item}
+                onCreateTask={async (origin, branch, selector) => {
+                  await fetch("/task", {
+                    method: "POST",
+                    body: JSON.stringify({ origin, branch, selector }),
+                  });
+                  fetchTasks();
+                }}
+              />
+            ))}
+          </div>
+        )
+        : null}
 
       <div
         className="p-2 h-screen overflow-y-scroll grow"

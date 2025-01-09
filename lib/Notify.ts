@@ -33,7 +33,23 @@ export default class Notify {
                 method: "POST",
                 body: JSON.stringify(message),
                 headers: { "Content-Type": "applicatin/json" },
-              });
+              }).then(async (res) => {
+                console.log(
+                  `notify ${notify} response status:`,
+                  res.status,
+                  res.statusText,
+                );
+                const contentType = res.headers.get("Content-Type");
+                if (contentType?.startsWith("application/json")) {
+                  console.log(
+                    `notify ${notify} response body: ${
+                      JSON.stringify(await res.json(), null, 2)
+                    }`,
+                  );
+                } else {console.log(
+                    `notify ${notify} response body: ${await res.text()}`,
+                  );}
+              }).catch((err) => console.log(`${notify} request error: ${err}`));
             },
           });
         }

@@ -9,10 +9,10 @@ function trimBoolArg(argName: string, defaultValue?: string) {
 
 const [{ origin, branch }] = Builder.workspace;
 
+console.log(args.notify)
+
 const notify = trimBoolArg("notify").split(",");
 const verbose = Boolean(args.verbose);
-
-console.log(notify);
 
 Builder.run(
   {

@@ -31,7 +31,6 @@ const stream = (data: StreamData): SocketData => ({
 
 export default abstract class Builder {
   static workspace = this.findGitRepositories(Deno.cwd());
-
   static currentTask: Task | null = null;
 
   private static notifyClient: NotifyClient;

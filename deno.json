@@ -1,6 +1,6 @@
 {
   "name": "@trok/trok",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "license": "MIT",
   "exports": {
     ".": "./lib/cli.ts",
@@ -16,6 +16,8 @@
   },
 
   "tasks": {
+    "test:server": "deno serve --watch -A --host 127.0.0.1 lib/server.tsx",
+    "test:build": "deno -A lib/cli.ts --notify https://api.sleeplessplanet.com,https://github.com/asdf/80asdf",
     "buildUI": "rm -rf ./ui/dist && esbuild ui/src/routes/main.tsx --external:preact --bundle --format=esm --outfile=ui/dist/main.js.txt"
   },
 
