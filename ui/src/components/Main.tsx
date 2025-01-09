@@ -1,7 +1,12 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource preact */
 
-import { Socket, useTaskHubList, useWorkspace } from "../service/index.ts";
+import {
+  getApi,
+  Socket,
+  useTaskHubList,
+  useWorkspace,
+} from "../service/index.ts";
 import { useEffect } from "preact/hooks";
 import { useSnapshots } from "../service/index.ts";
 import TaskState from "./TaskState.tsx";
@@ -31,7 +36,7 @@ export default function Main() {
               <Repo
                 repo={item}
                 onCreateTask={async (origin, branch, selector) => {
-                  await fetch("/task", {
+                  await fetch(getApi("task"), {
                     method: "POST",
                     body: JSON.stringify({ origin, branch, selector }),
                   });

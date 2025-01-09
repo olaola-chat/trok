@@ -71,6 +71,9 @@ function mitt(all) {
 }
 
 // ui/src/service/index.ts
+function getApi(path) {
+  return `${location.href}${path}`;
+}
 function notifyMe(message) {
   if (!("Notification" in window)) alert("\u5F53\u524D\u6D4F\u89C8\u5668\u4E0D\u652F\u6301\u684C\u9762\u901A\u77E5");
   else if (Notification.permission === "granted") new Notification(message);
@@ -83,7 +86,11 @@ function notifyMe(message) {
 function useWorkspace() {
   const [workspace, setWorkspace] = useState([]);
   const fetchWorkspace = useCallback(
-    () => void fetch("/workspace").then((res) => res.json()).then(setWorkspace),
+    () => {
+      void fetch(getApi("workspace")).then((res) => res.json()).then(
+        setWorkspace
+      );
+    },
     []
   );
   useEffect(() => void fetchWorkspace(), []);
@@ -92,7 +99,9 @@ function useWorkspace() {
 function useTaskHubList() {
   const [list, setList] = useState([]);
   const fetchTasks = useCallback(
-    () => fetch("/task").then((res) => res.json()).then(setList),
+    () => {
+      fetch(getApi("task")).then((res) => res.json()).then(setList);
+    },
     []
   );
   useEffect(() => void fetchTasks(), []);
@@ -121,7 +130,7 @@ var Socket = class {
 function useSnapshots() {
   const [snapshots, setSnapshots] = useState([]);
   useEffect(() => {
-    fetch("/snapshot").then((res) => res.json()).then(setSnapshots).then(
+    fetch(getApi("snapshot")).then((res) => res.json()).then(setSnapshots).then(
       () => {
         Socket.mitt.on("data", (data) => {
           if (data.type === "snapshot") {
@@ -309,7 +318,7 @@ function Main() {
       {
         repo: item,
         onCreateTask: async (origin, branch, selector) => {
-          await fetch("/task", {
+          await fetch(getApi("task"), {
             method: "POST",
             body: JSON.stringify({ origin, branch, selector })
           });

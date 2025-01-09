@@ -7,6 +7,10 @@ import type {
 } from "../../../lib/type.ts";
 import mitt from "../../../lib/mitt.ts";
 
+export function getApi(path: string) {
+  return `${location.href}${path}`;
+}
+
 function notifyMe(message: string) {
   if (!("Notification" in window)) alert("当前浏览器不支持桌面通知");
   else if (Notification.permission === "granted") new Notification(message);
@@ -21,7 +25,11 @@ export function useWorkspace() {
   const [workspace, setWorkspace] = useState<Repository[]>([]);
 
   const fetchWorkspace = useCallback(
-    () => void fetch("/workspace").then((res) => res.json()).then(setWorkspace),
+    () => {
+      void fetch(getApi("workspace")).then((res) => res.json()).then(
+        setWorkspace,
+      );
+    },
     [],
   );
 
@@ -33,7 +41,9 @@ export function useWorkspace() {
 export function useTaskHubList() {
   const [list, setList] = useState<Task[]>([]);
   const fetchTasks = useCallback(
-    () => fetch("/task").then((res) => res.json()).then(setList),
+    () => {
+      fetch(getApi("task")).then((res) => res.json()).then(setList);
+    },
     [],
   );
   useEffect(() => void fetchTasks(), []);
@@ -68,7 +78,7 @@ export class Socket {
 export function useSnapshots() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   useEffect(() => {
-    fetch("/snapshot").then((res) => res.json()).then(setSnapshots).then(
+    fetch(getApi("snapshot")).then((res) => res.json()).then(setSnapshots).then(
       () => {
         Socket.mitt.on("data", (data) => {
           if (data.type === "snapshot") {
