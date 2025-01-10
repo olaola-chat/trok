@@ -79,6 +79,7 @@ export default function TaskState(props: { snapshots: Snapshot[] }) {
         </div>
 
         <div className="chat-footer opacity-50 text-xs mt-1">
+          from: <span class="badge badge-xs badge-secondary">{taskState.task.from}</span>
           {new Date(taskState.timestamp).toLocaleString()}
         </div>
       </div>

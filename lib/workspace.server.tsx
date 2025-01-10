@@ -61,7 +61,7 @@ export default {
           branch: string;
           selector: string;
         };
-        TaskHub.register({ ...data, from: "server" });
+        TaskHub.register({ ...data, from: "workspace" });
         return text("提交成功");
       }
 

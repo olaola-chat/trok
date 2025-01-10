@@ -175,7 +175,11 @@ function TaskState(props) {
         ]
       }
     ),
-    /* @__PURE__ */ jsx("div", { className: "chat-footer opacity-50 text-xs mt-1", children: new Date(taskState.timestamp).toLocaleString() })
+    /* @__PURE__ */ jsxs("div", { className: "chat-footer opacity-50 text-xs mt-1", children: [
+      "from: ",
+      /* @__PURE__ */ jsx("span", { class: "badge badge-xs badge-secondary", children: taskState.task.from }),
+      new Date(taskState.timestamp).toLocaleString()
+    ] })
   ] }) });
 }
 function PkgItem(props) {

@@ -10,7 +10,7 @@ export type Task = {
   origin: string;
   branch: string;
   selector: string;
-  from?: string;
+  from: string;
 };
 
 export type StreamData = {

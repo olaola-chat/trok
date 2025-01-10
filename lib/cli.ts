@@ -12,11 +12,14 @@ const [{ origin, branch }] = Workspace.repos;
 const notify = trimBoolArg("notify").split(",");
 const verbose = Boolean(args.verbose);
 
-const task = {
-  id: globalThis.crypto.randomUUID(),
-  origin: trimBoolArg("origin", origin),
-  branch: trimBoolArg("branch", branch),
-  selector: trimBoolArg("selector", "HEAD^...HEAD"),
-};
-
-Workspace.run({ task, notify, verbose });
+Workspace.run({
+  task: {
+    from: "cli",
+    id: globalThis.crypto.randomUUID(),
+    origin: trimBoolArg("origin", origin),
+    branch: trimBoolArg("branch", branch),
+    selector: trimBoolArg("selector", "HEAD^...HEAD"),
+  },
+  notify,
+  verbose,
+});
