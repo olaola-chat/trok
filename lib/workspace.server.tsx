@@ -1,8 +1,20 @@
+/** @jsxRuntime automatic */
+/** @jsxImportSource preact */
+
 import type { Task } from "./type.ts";
 import Hub from "./hub.server.tsx";
 import { basename } from "@std/path";
 import type { GithubWebhookBody } from "./type.ts";
 import Workspace from "./Workspace.ts";
+import { render } from "preact-render-to-string";
+import Document from "../ui/Document.tsx";
+
+function html(data: string, status = 200) {
+  return new Response(data, {
+    headers: { "content-type": "text/html; charset=UTF-8" },
+    status,
+  });
+}
 
 function json(data: object, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -18,13 +30,28 @@ function text(data: string, status = 200) {
   });
 }
 
+async function router(path: string) {
+  const url = new URL(`../ui/dist/${path}.js.txt`, import.meta.url);
+  if (url.protocol.startsWith("http")) {
+    return await fetch(url).then((res) => res.text());
+  }
+  return Deno.readTextFileSync(url);
+}
+
 export default {
   async fetch(req: Request): Promise<Response> {
+    const { pathname } = new URL(req.url);
+
+    const route = `${req.method} ${pathname}`;
+
+    if (route === "GET /" && req.headers.get("upgrade") !== "websocket") {
+      return html(render(<Document root={await router("workspace")} />));
+    }
+
     const response = await Hub.fetch(req);
     if (response.status !== 404) return response;
 
-    const { pathname } = new URL(req.url);
-    switch (`${req.method} ${pathname}`) {
+    switch (route) {
       case "GET /task":
         return json(TaskHub.list);
 

@@ -2,7 +2,7 @@
 /** @jsxImportSource preact */
 
 import { render } from "preact-render-to-string";
-import Document from "../ui/index.server.tsx";
+import Document from "../ui/Document.tsx";
 import type { Snapshot, SocketData } from "./type.ts";
 
 function html(data: string, status = 200) {
@@ -50,7 +50,7 @@ export default {
           );
           return response;
         }
-        return html(render(<Document root={await route("main")} />));
+        return html(render(<Document root={await route("hub")} />));
       }
 
       case "POST /": {

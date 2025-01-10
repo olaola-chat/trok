@@ -2,6 +2,6 @@
 /** @jsxImportSource preact */
 
 import { render } from "preact";
-import Main from "../components/Main.tsx";
+import Hub from "../components/Hub.tsx";
 
-render(<Main />, document.getElementById("root")!);
+render(<Hub />, document.getElementById("root")!);

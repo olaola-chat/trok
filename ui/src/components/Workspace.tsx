@@ -8,22 +8,35 @@ import {
   useWorkspace,
 } from "../service/index.ts";
 import { useEffect } from "preact/hooks";
-import { useSnapshots } from "../service/index.ts";
-import TaskState from "./TaskState.tsx";
 import Repo from "./Repo.tsx";
-import { TaskHubList } from "./TaskHub.tsx";
+import type { Task } from "../../../lib/type.ts";
+import Hub from "./Hub.tsx";
 
-export default function Main() {
-  const snapshots = useSnapshots();
-  const snapShotGroups = Object.values(
-    Object.groupBy(snapshots, (item) => item.task.id),
+export function TaskHubList(props: { list: Task[] }) {
+  return (
+    <div className="stack fixed bottom-2 right-2">
+      {props.list.map((item) => {
+        return (
+          <div className="shadow rounded-lg p-4 bg-base-100 border text-center text-sm">
+            {item.origin}
+            <span className="badge badge-primary badge-sm mx-2">
+              {item.branch}
+            </span>
+            <span className="kbd kbd-sm">{item.selector}</span>
+          </div>
+        );
+      })}
+    </div>
   );
-  const { list, fetchTasks } = useTaskHubList();
+}
+
+export default function Workspace() {
   const { workspace } = useWorkspace();
 
+  const { list, fetchTasks } = useTaskHubList();
   useEffect(() => {
     Socket.mitt.on("data", (data) => {
-      if (data.type === "snapshot") void fetchTasks();
+      if (data.type === "snapshot") fetchTasks();
     });
   }, []);
 
@@ -47,14 +60,8 @@ export default function Main() {
           </div>
         )
         : null}
-
-      <div
-        className="p-2 h-screen overflow-y-scroll grow"
-        ref={(el) => el?.scrollTo(0, el.scrollHeight)}
-      >
-        {snapShotGroups.map((item) => <TaskState snapshots={item!} />)}
-      </div>
       <TaskHubList list={list} />
+      <Hub />
     </div>
   );
 }

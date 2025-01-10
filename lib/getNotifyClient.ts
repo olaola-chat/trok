@@ -1,9 +1,9 @@
 import type { SocketData } from "./type.ts";
 
-export type Notify = string | ((data: SocketData) => unknown);
+export type Notify = string | ((data: SocketData) => void);
 
 export type Client = {
-  send: (data: SocketData) => unknown;
+  send: (data: SocketData) => void;
   close?: (() => void) | undefined;
 };
 
@@ -27,13 +27,13 @@ export default async function getNotifyClient(
   );
 
   clients.push({
-    send: (data: SocketData) => {
+    send: (data) => {
       console.log(data.type === "stream" ? data.data.data : data.data);
     },
   });
 
   return {
-    send: (data: SocketData) => clients.map((item) => item.send(data)),
+    send: (data) => clients.map((item) => item.send(data)),
     close: () => clients.map((item) => item.close?.()),
   };
 }
@@ -44,7 +44,7 @@ const isVerbose = (data: SocketData) =>
 function getHttpNotifyClient(notify: string, verbose: boolean): Client {
   if (verbose) console.warn(`http通知强制关闭verbose选项, 仅通知必要信息`);
   return {
-    send: (data: SocketData) => {
+    send: (data) => {
       if (isVerbose(data)) return;
       fetch(notify, {
         method: "POST",
@@ -76,7 +76,7 @@ async function getWebocketNotifyClient(notify: string, verbose: boolean) {
   return await new Promise<Client>((resolve, reject) => {
     socket.addEventListener("open", () => {
       resolve({
-        send: (data: SocketData) => {
+        send: (data) => {
           if (isVerbose(data) && !verbose) return;
           socket.send(JSON.stringify(data));
         },

@@ -1,10 +1,10 @@
 {
   "name": "@trok/trok",
-  "version": "0.1.35",
+  "version": "0.1.36",
   "license": "MIT",
   "exports": {
     ".": "./lib/cli.ts",
-    "./workspace": "./lib/workspace.server.ts",
+    "./workspace": "./lib/workspace.server.tsx",
     "./hub": "./lib/hub.server.tsx"
   },
   "imports": {
@@ -16,10 +16,12 @@
   },
 
   "tasks": {
-    "serve:workspace": "deno serve --watch -A --host 127.0.0.1 lib/wrokspace.server.tsx",
+    "serve:workspace": "deno serve --watch -A --host 127.0.0.1 lib/workspace.server.tsx",
     "serve:hub": "deno serve --watch -A --host 127.0.0.1 lib/hub.server.tsx",
     "test:build": "deno -A lib/cli.ts --notify https://api.sleeplessplanet.com,https://github.com/asdf/80asdf",
-    "buildUI": "rm -rf ./ui/dist && esbuild ui/src/routes/main.tsx --external:preact --bundle --format=esm --outfile=ui/dist/main.js.txt"
+    "buildWorkspace": "esbuild ui/src/routes/workspace.tsx --external:preact --bundle --format=esm --outfile=ui/dist/workspace.js.txt",
+    "buildHub": "esbuild ui/src/routes/hub.tsx --external:preact --bundle --format=esm --outfile=ui/dist/hub.js.txt",
+    "buildUI": "rm -rf ./ui/dist &&  deno run buildWorkspace && deno run buildHub"
   },
 
   "fmt": {
