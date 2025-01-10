@@ -72,7 +72,7 @@ export abstract class TaskHub {
       if (item) {
         await Builder.run({
           task: item,
-          notify: SocketHub.broadcast,
+          notify: (data) => SocketHub.broadcast(data),
           verbose: true,
         });
       }
