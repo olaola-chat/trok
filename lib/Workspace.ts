@@ -32,8 +32,8 @@ const stream = (data: StreamData): SocketData => ({
   data: cloneObj(data),
 });
 
-export default abstract class Builder {
-  static workspace = this.findGitRepositories(Deno.cwd());
+export default abstract class Workspace {
+  static repos = this.findGitRepositories(Deno.cwd());
   static currentTask: Task | null = null;
 
   private static notifyClient: Client;
@@ -159,7 +159,7 @@ export default abstract class Builder {
   }
 
   private static async prepareTask(task: Task) {
-    const repository = this.workspace.find((repo) =>
+    const repository = this.repos.find((repo) =>
       isSameGitOrigin(repo.origin, task.origin)
     );
     if (!repository) {

@@ -1,5 +1,5 @@
 import { parseArgs } from "@std/cli/parse-args";
-import Builder from "./Builder.ts";
+import Workspace from "./Workspace.ts";
 
 const args = parseArgs(Deno.args);
 
@@ -7,7 +7,7 @@ function trimBoolArg(argName: string, defaultValue?: string) {
   return args[argName] === true ? undefined : args[argName] ?? defaultValue;
 }
 
-const [{ origin, branch }] = Builder.workspace;
+const [{ origin, branch }] = Workspace.repos;
 
 const notify = trimBoolArg("notify").split(",");
 const verbose = Boolean(args.verbose);
@@ -19,4 +19,4 @@ const task = {
   selector: trimBoolArg("selector", "HEAD^...HEAD"),
 };
 
-Builder.run({ task, notify, verbose });
+Workspace.run({ task, notify, verbose });
