@@ -169,6 +169,7 @@ export default abstract class Workspace {
       throw new Error(`branch ${task.branch} not found`);
     }
 
+    this.notifyClient.send(snapshot({ task, status: "start" }));
     this.notifyClient.send(snapshot({ task, status: "progress" }));
 
     // 拉取最新代码

@@ -33,7 +33,7 @@ export type Package = {
 export type Snapshot = {
   task: Task;
   timestamp: number;
-  status: "pending" | "progress" | "resolved" | "rejected";
+  status: "start" | "progress" | "resolved" | "rejected";
   commits?: string[];
   packages?: Package[];
   logs?: ExecLog | string;

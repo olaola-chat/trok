@@ -14,7 +14,7 @@ export default function TaskState(props: { snapshots: Snapshot[] }) {
   const [taskState] = props.snapshots.sort((a, b) => {
     const value = b.timestamp - a.timestamp;
     if (value !== 0) return value;
-    return a.status === "pending" ? 1 : -1;
+    return a.status === "start" ? 1 : -1;
   });
   const [streamData, setStreamData] = useState<StreamData[]>([]);
 
@@ -39,7 +39,7 @@ export default function TaskState(props: { snapshots: Snapshot[] }) {
         <div
           className={`chat-bubble min-w-80 relative chat-bubble-${
             {
-              pending: "neutral",
+              start: "neutral",
               progress: "neutral",
               resolved: "success",
               rejected: "error",
