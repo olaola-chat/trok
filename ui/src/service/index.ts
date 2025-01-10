@@ -81,17 +81,16 @@ export function useSnapshots() {
     fetch(getApi("snapshot")).then((res) => res.json()).then(setSnapshots).then(
       () => {
         Socket.mitt.on("data", (data) => {
-          if (data.type === "snapshot") {
-            notifyMe(
-              {
-                pending: "开始处理",
-                progress: "开始打包",
-                resolved: "处理完成",
-                rejected: "处理失败",
-              }[data.data.status],
-            );
-            setSnapshots((snapshot) => [...snapshot!, data.data]);
-          }
+          if (data.type !== "snapshot") return;
+          notifyMe(
+            {
+              pending: "开始处理",
+              progress: "开始打包",
+              resolved: "处理完成",
+              rejected: "处理失败",
+            }[data.data.status],
+          );
+          setSnapshots((snapshot) => [...snapshot!, data.data]);
         });
       },
     );

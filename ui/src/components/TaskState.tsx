@@ -59,8 +59,7 @@ export default function TaskState(props: { snapshots: Snapshot[] }) {
             )
             : null}
 
-          {streamData.length > 0 &&
-            taskState.status === "pending" && (
+          {taskState.status === "progress" && (
             <Code title="stream" theme="info">
               {streamData.map((item) => item.data).join("")}
             </Code>

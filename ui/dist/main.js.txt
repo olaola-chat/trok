@@ -133,17 +133,16 @@ function useSnapshots() {
     fetch(getApi("snapshot")).then((res) => res.json()).then(setSnapshots).then(
       () => {
         Socket.mitt.on("data", (data) => {
-          if (data.type === "snapshot") {
-            notifyMe(
-              {
-                pending: "\u5F00\u59CB\u5904\u7406",
-                progress: "\u5F00\u59CB\u6253\u5305",
-                resolved: "\u5904\u7406\u5B8C\u6210",
-                rejected: "\u5904\u7406\u5931\u8D25"
-              }[data.data.status]
-            );
-            setSnapshots((snapshot) => [...snapshot, data.data]);
-          }
+          if (data.type !== "snapshot") return;
+          notifyMe(
+            {
+              pending: "\u5F00\u59CB\u5904\u7406",
+              progress: "\u5F00\u59CB\u6253\u5305",
+              resolved: "\u5904\u7406\u5B8C\u6210",
+              rejected: "\u5904\u7406\u5931\u8D25"
+            }[data.data.status]
+          );
+          setSnapshots((snapshot) => [...snapshot, data.data]);
         });
       }
     );
@@ -195,7 +194,7 @@ function TaskState(props) {
               commitItem
             ] })) })
           ] }) : null,
-          streamData.length > 0 && taskState.status === "pending" && /* @__PURE__ */ jsx(Code, { title: "stream", theme: "info", children: streamData.map((item) => item.data).join("") }),
+          taskState.status === "progress" && /* @__PURE__ */ jsx(Code, { title: "stream", theme: "info", children: streamData.map((item) => item.data).join("") }),
           taskState.packages?.length !== 0 && /* @__PURE__ */ jsxs(Fragment, { children: [
             /* @__PURE__ */ jsx("h6", { children: "\u9879\u76EE\u5217\u8868" }),
             /* @__PURE__ */ jsx("ul", { className: "text-xs", children: taskState.packages?.map((packageItem) => /* @__PURE__ */ jsx(PkgItem, { item: packageItem })) })

@@ -155,7 +155,7 @@ export default abstract class Builder {
       cwd: repository.path,
     }).outputSync();
 
-    throw new Error(`源码仓库工作区有变更: \n${stdout}`);
+    throw new Error(`仓库工作区有变更: \n${stdout}`);
   }
 
   private static async prepareTask(task: Task) {
