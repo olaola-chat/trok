@@ -15,7 +15,6 @@ export type Task = {
 
 export type StreamData = {
   task: Task;
-  packagePath?: string;
   data: string;
 };
 
@@ -27,7 +26,7 @@ export type ExecLog = {
 
 export type Package = {
   path: string;
-  status: "pending" | "resolved" | "rejected";
+  status: "pending" | "progress" | "resolved" | "rejected";
   logs?: ExecLog | string;
 };
 

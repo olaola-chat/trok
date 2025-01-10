@@ -69,7 +69,13 @@ export abstract class TaskHub {
   static async dispatch() {
     if (!Builder.currentTask) {
       const item = this.list.shift();
-      if (item) await Builder.run(item);
+      if (item) {
+        await Builder.run({
+          task: item,
+          notify: SocketHub.broadcast,
+          verbose: true,
+        });
+      }
     }
     setTimeout(() => this.dispatch(), 3000);
   }

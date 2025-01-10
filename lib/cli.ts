@@ -9,18 +9,14 @@ function trimBoolArg(argName: string, defaultValue?: string) {
 
 const [{ origin, branch }] = Builder.workspace;
 
-console.log(args.notify)
-
 const notify = trimBoolArg("notify").split(",");
 const verbose = Boolean(args.verbose);
 
-Builder.run(
-  {
-    id: globalThis.crypto.randomUUID(),
-    origin: trimBoolArg("origin", origin),
-    branch: trimBoolArg("branch", branch),
-    selector: trimBoolArg("selector", "HEAD^...HEAD"),
-  },
-  notify,
-  verbose,
-);
+const task = {
+  id: globalThis.crypto.randomUUID(),
+  origin: trimBoolArg("origin", origin),
+  branch: trimBoolArg("branch", branch),
+  selector: trimBoolArg("selector", "HEAD^...HEAD"),
+};
+
+Builder.run({ task, notify, verbose });

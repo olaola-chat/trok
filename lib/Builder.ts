@@ -17,7 +17,10 @@ import {
   isSameGitOrigin,
   streamExec,
 } from "./util.ts";
-import Notify, { type NotifyClient } from "./Notify.ts";
+import getNotifyClient, {
+  type Client,
+  type Notify,
+} from "./getNotifyClient.ts";
 
 const snapshot = (data: Omit<Snapshot, "timestamp">): SocketData => ({
   type: "snapshot",
@@ -33,7 +36,7 @@ export default abstract class Builder {
   static workspace = this.findGitRepositories(Deno.cwd());
   static currentTask: Task | null = null;
 
-  private static notifyClient: NotifyClient;
+  private static notifyClient: Client;
 
   private static getChangedPackages(
     repository: Repository,
@@ -104,8 +107,8 @@ export default abstract class Builder {
         ? ["ci"]
         : ["install", "--frozen-lockfile"],
       onStreamData: (data) => {
-        this.notifyClient.notify(
-          stream({ task: this.currentTask!, data, packagePath }),
+        this.notifyClient.send(
+          stream({ task: this.currentTask!, data }),
         );
       },
     });
@@ -121,8 +124,8 @@ export default abstract class Builder {
       cwd: absolutePackagePath,
       args: ["run", "build"],
       onStreamData: (data) => {
-        this.notifyClient.notify(
-          stream({ task: this.currentTask!, data, packagePath }),
+        this.notifyClient.send(
+          stream({ task: this.currentTask!, data }),
         );
       },
     });
@@ -134,7 +137,7 @@ export default abstract class Builder {
       cwd: repository.path,
       args: ["status", "-s", repository.path],
       onStreamData: (data) => {
-        this.notifyClient.notify(
+        this.notifyClient.send(
           stream({ task: this.currentTask!, data }),
         );
       },
@@ -166,20 +169,18 @@ export default abstract class Builder {
       throw new Error(`branch ${task.branch} not found`);
     }
 
-    this.notifyClient.notify(snapshot({ task, status: "progress" }));
+    this.notifyClient.send(snapshot({ task, status: "progress" }));
 
     // 拉取最新代码
     await streamExec("git", {
       cwd: repository.path,
       args: ["pull"],
       onStreamData: (data) => {
-        this.notifyClient.notify(
+        this.notifyClient.send(
           stream({ task: this.currentTask!, data }),
         );
       },
     });
-
-    // this.notifyClient.notify(stream({ taskId: task.id, data: "拉取仓库更新" }));
 
     const packages = this.filterPackages(repository, task).map((
       item,
@@ -195,17 +196,21 @@ export default abstract class Builder {
     return { repository, packages, commits };
   }
 
-  static async run(task: Task, notify?: string | string[], verbose?: boolean) {
+  static async run(
+    options: { task: Task; notify?: Notify | Notify[]; verbose?: boolean },
+  ) {
+    const { task, notify, verbose } = options;
     this.currentTask = task;
-    this.notifyClient = await Notify.getClient(task, notify, verbose);
+    this.notifyClient = await getNotifyClient(notify, verbose);
 
     try {
       const { repository, packages, commits } = await this.prepareTask(task);
-      this.notifyClient.notify(
-        snapshot({ task, status: "pending", packages, commits }),
-      );
 
       for (const item of packages) {
+        item.status = "progress";
+        this.notifyClient.send(
+          snapshot({ task, status: "progress", packages, commits }),
+        );
         try {
           await this.installPackage(repository, item.path);
           await this.buildPackage(repository, item.path);
@@ -216,24 +221,24 @@ export default abstract class Builder {
           item.logs = logs;
           continue;
         } finally {
-          this.notifyClient.notify(
+          this.notifyClient.send(
             snapshot({ task, status: "progress", packages, commits }),
           );
           await this.checkRepositoryDirty(repository);
         }
       }
 
-      this.notifyClient.notify(
+      this.notifyClient.send(
         snapshot({ task, status: "resolved", packages, commits }),
       );
     } catch (err) {
       const logs = err instanceof Error ? err.message : err as ExecLog;
-      this.notifyClient.notify(
+      this.notifyClient.send(
         snapshot({ task: task, status: "rejected", logs: logs }),
       );
     } finally {
       this.currentTask = null;
-      this.notifyClient.release?.();
+      this.notifyClient.close?.();
     }
   }
 }

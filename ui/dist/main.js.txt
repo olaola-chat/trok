@@ -157,25 +157,6 @@ import { useEffect as useEffect3 } from "preact/hooks";
 // ui/src/components/TaskState.tsx
 import { useEffect as useEffect2, useState as useState2 } from "preact/hooks";
 import { Fragment, jsx, jsxs } from "preact/jsx-runtime";
-function Code(props) {
-  return /* @__PURE__ */ jsx(
-    "pre",
-    {
-      title: props.title,
-      className: `text-xs overflow-x-scroll bg-${props.theme}-content rounded text-${props.theme} p-2 my-2 max-h-80 max-w-5xl`,
-      ref: (el) => el?.scrollTo(0, el.scrollHeight),
-      children: /* @__PURE__ */ jsx("code", { children: props.children })
-    }
-  );
-}
-function Logs(props) {
-  if (typeof props.logs === "string") return props.logs;
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx(Code, { title: "stdout", theme: "info", children: props.logs.stdout }),
-    props.logs.signal,
-    /* @__PURE__ */ jsx(Code, { title: "stderr", theme: "error", children: props.logs.stderr })
-  ] });
-}
 function TaskState(props) {
   const [taskState] = props.snapshots.sort((a, b) => {
     const value = b.timestamp - a.timestamp;
@@ -185,16 +166,14 @@ function TaskState(props) {
   const [streamData, setStreamData] = useState2([]);
   useEffect2(() => {
     Socket.mitt.on("data", (data) => {
-      if (data.type === "stream") {
-        if (data.data.task.id === taskState.task.id) {
-          setStreamData((value) => [...value, data.data]);
-        }
-      }
+      if (data.type !== "stream") return;
+      if (data.data.task.id !== taskState.task.id) return;
+      setStreamData((value) => [...value, data.data]);
     });
   }, []);
   return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsxs("div", { className: `flex flex-col items-start chat chat-start mb-5`, children: [
     /* @__PURE__ */ jsxs("div", { className: "chat-header opacity-50 mb-1 text-xs ", children: [
-      taskState.task.origin,
+      /* @__PURE__ */ jsx("span", { children: taskState.task.origin }),
       /* @__PURE__ */ jsx("span", { className: "text-xs badge badge-xs badge-primary mx-2", children: taskState.task.branch }),
       /* @__PURE__ */ jsx("span", { className: "kbd kbd-xs", children: taskState.task.selector })
     ] }),
@@ -216,31 +195,49 @@ function TaskState(props) {
               commitItem
             ] })) })
           ] }) : null,
-          streamData.filter((item) => !item.packagePath).length > 0 && taskState.status === "pending" && /* @__PURE__ */ jsx(Code, { title: "stream", theme: "info", children: streamData.filter((item) => !item.packagePath).map((item) => item.data).join("") }),
-          taskState.packages?.length ? /* @__PURE__ */ jsxs(Fragment, { children: [
+          streamData.length > 0 && taskState.status === "pending" && /* @__PURE__ */ jsx(Code, { title: "stream", theme: "info", children: streamData.map((item) => item.data).join("") }),
+          taskState.packages?.length !== 0 && /* @__PURE__ */ jsxs(Fragment, { children: [
             /* @__PURE__ */ jsx("h6", { children: "\u9879\u76EE\u5217\u8868" }),
-            /* @__PURE__ */ jsx("ul", { className: "text-xs", children: taskState.packages?.map((packageItem) => {
-              const packageStream = streamData.filter(
-                (item) => item.packagePath === packageItem.path
-              );
-              const pending = packageStream.length ? /* @__PURE__ */ jsx("span", { className: "loading loading-spinner text-warning loading-xs" }) : /* @__PURE__ */ jsx("span", { className: "text-warning", children: "-" });
-              const rejected = /* @__PURE__ */ jsx("span", { className: "text-error", children: "\u2717" });
-              const resolved = /* @__PURE__ */ jsx("span", { className: "text-primary", children: "\u2713" });
-              return /* @__PURE__ */ jsxs(Fragment, { children: [
-                /* @__PURE__ */ jsxs("li", { className: "text-sm flex items-center gap-2", children: [
-                  { pending, rejected, resolved }[packageItem.status],
-                  packageItem.path
-                ] }),
-                packageStream.length > 0 && packageItem.status === "pending" && /* @__PURE__ */ jsx(Code, { theme: "info", children: packageStream.map((item) => item.data).join("") }),
-                packageItem.logs && /* @__PURE__ */ jsx(Logs, { logs: packageItem.logs })
-              ] });
-            }) })
-          ] }) : null
+            /* @__PURE__ */ jsx("ul", { className: "text-xs", children: taskState.packages?.map((packageItem) => /* @__PURE__ */ jsx(PkgItem, { item: packageItem })) })
+          ] })
         ]
       }
     ),
     /* @__PURE__ */ jsx("div", { className: "chat-footer opacity-50 text-xs mt-1", children: new Date(taskState.timestamp).toLocaleString() })
   ] }) });
+}
+function PkgItem(props) {
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsxs("li", { className: "text-sm flex items-center gap-2", children: [
+      {
+        progress: /* @__PURE__ */ jsx("span", { className: "loading loading-spinner loading-xs" }),
+        pending: /* @__PURE__ */ jsx("span", { className: "text-warning", children: "-" }),
+        rejected: /* @__PURE__ */ jsx("span", { className: "text-error", children: "\u2717" }),
+        resolved: /* @__PURE__ */ jsx("span", { className: "text-primary", children: "\u2713" })
+      }[props.item.status],
+      props.item.path
+    ] }),
+    props.item.logs && /* @__PURE__ */ jsx(Logs, { logs: props.item.logs })
+  ] });
+}
+function Code(props) {
+  return /* @__PURE__ */ jsx(
+    "pre",
+    {
+      title: props.title,
+      className: `text-xs overflow-x-scroll bg-${props.theme}-content rounded text-${props.theme} p-2 my-2 max-h-80 max-w-5xl`,
+      ref: (el) => el?.scrollTo(0, el.scrollHeight),
+      children: /* @__PURE__ */ jsx("code", { children: props.children })
+    }
+  );
+}
+function Logs(props) {
+  if (typeof props.logs === "string") return props.logs;
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Code, { title: "stdout", theme: "info", children: props.logs.stdout }),
+    props.logs.signal,
+    /* @__PURE__ */ jsx(Code, { title: "stderr", theme: "error", children: props.logs.stderr })
+  ] });
 }
 
 // ui/src/components/Repo.tsx
