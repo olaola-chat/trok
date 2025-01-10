@@ -14,7 +14,7 @@ const verbose = Boolean(args.verbose);
 
 Workspace.run({
   task: {
-    from: "cli",
+    from: trimBoolArg("from", "cli"),
     id: globalThis.crypto.randomUUID(),
     origin: trimBoolArg("origin", origin),
     branch: trimBoolArg("branch", branch),

@@ -61,7 +61,7 @@ export default {
           branch: string;
           selector: string;
         };
-        TaskHub.register({ ...data, from: "workspace" });
+        TaskHub.register({ ...data, from: "@trok/trok ui" });
         return text("提交成功");
       }
 
@@ -71,7 +71,7 @@ export default {
           origin: data.repository.html_url,
           branch: basename(data.ref),
           selector: basename(data.compare),
-          from: "github",
+          from: "@trok/trok github",
         });
         return text("提交成功");
       }

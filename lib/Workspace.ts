@@ -197,7 +197,11 @@ export default abstract class Workspace {
   }
 
   static async run(
-    options: { task: Task; notify?: Notify | Notify[]; verbose?: boolean },
+    options: {
+      task: Task;
+      notify?: Notify | Notify[];
+      verbose?: boolean;
+    },
   ) {
     const { task, notify, verbose } = options;
     this.currentTask = task;
