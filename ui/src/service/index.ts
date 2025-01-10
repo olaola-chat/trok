@@ -26,7 +26,7 @@ export function useWorkspace() {
 
   const fetchWorkspace = useCallback(
     () => {
-      void fetch(getApi("workspace")).then((res) => res.json()).then(
+      void fetch(getApi("repos")).then((res) => res.json()).then(
         setWorkspace,
       );
     },
