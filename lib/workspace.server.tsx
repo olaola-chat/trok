@@ -71,7 +71,7 @@ export default {
           origin: data.repository.html_url,
           branch: basename(data.ref),
           selector: basename(data.compare),
-          from: "@trok/trok github",
+          from: `@trok/trok github.${data.sender.login}`,
         });
         return text("提交成功");
       }
