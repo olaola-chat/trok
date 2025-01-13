@@ -4,12 +4,12 @@ import Workspace from "./Workspace.ts";
 const args = parseArgs(Deno.args);
 
 function trimBoolArg(argName: string, defaultValue?: string) {
-  return args[argName] === true ? defaultValue : args[argName];
+  return args[argName] === true ? defaultValue : (args[argName] ?? defaultValue);
 }
 
 const [{ origin, branch }] = Workspace.repos;
 
-const notify = trimBoolArg("notify").split(",");
+const notify = trimBoolArg("notify")?.split(",");
 const verbose = Boolean(args.verbose);
 
 Workspace.run({
