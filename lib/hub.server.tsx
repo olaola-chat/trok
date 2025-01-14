@@ -54,9 +54,8 @@ export default {
       }
 
       case "POST /": {
-        const snapshot = await req.json() as Snapshot;
-        SnapshotHub.registry(snapshot);
-        return text("ok");
+        this.broadcast(await req.json() as SocketData);
+        return text('ok');
       }
 
       case "GET /snapshot": {
