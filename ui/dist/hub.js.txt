@@ -167,7 +167,7 @@ function TaskState(props) {
               commitItem
             ] })) })
           ] }) : null,
-          taskState.status === "progress" && /* @__PURE__ */ jsx(Code, { title: "stream", theme: "info", children: streamData.map((item) => item.data).join("") }),
+          taskState.status === "progress" && streamData.length !== 0 && /* @__PURE__ */ jsx(Code, { title: "stream", theme: "info", children: streamData.map((item) => item.data).join("") }),
           taskState.packages?.length !== 0 && /* @__PURE__ */ jsxs(Fragment, { children: [
             /* @__PURE__ */ jsx("h6", { children: "\u9879\u76EE\u5217\u8868" }),
             /* @__PURE__ */ jsx("ul", { className: "text-xs", children: taskState.packages?.map((packageItem) => /* @__PURE__ */ jsx(PkgItem, { item: packageItem })) })

@@ -61,7 +61,7 @@ export default {
           branch: string;
           selector: string;
         };
-        TaskHub.register({ ...data, from: "@trok/trok ui" });
+        TaskHub.register({ ...data, from: "@trok/trok.ui" });
         return text("提交成功");
       }
 
