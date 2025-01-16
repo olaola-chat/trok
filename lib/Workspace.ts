@@ -169,9 +169,6 @@ export default abstract class Workspace {
       throw new Error(`branch ${task.branch} not found`);
     }
 
-    this.notifyClient.send(snapshot({ task, status: "start" }));
-    this.notifyClient.send(snapshot({ task, status: "progress" }));
-
     // 拉取最新代码
     await streamExec("git", {
       cwd: repository.path,
@@ -210,6 +207,7 @@ export default abstract class Workspace {
 
     try {
       const { repository, packages, commits } = await this.prepareTask(task);
+      this.notifyClient.send(snapshot({ task, status: "pending", packages, commits }));
 
       for (const item of packages) {
         item.status = "progress";

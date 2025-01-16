@@ -38,11 +38,34 @@ export default async function getNotifyClient(
   };
 }
 
-const isVerbose = (data: SocketData) =>
-  data.type === "stream" || data.data.status === "progress";
+const isVerbose = (data: SocketData) => data.type === "stream";
 
 function getHttpNotifyClient(notify: string, verbose: boolean): Client {
   if (verbose) console.warn(`http通知强制关闭verbose选项, 仅通知必要信息`);
+
+  // 企业微信格式
+  if (notify.startsWith("https://qyapi.weixin.qq.com")) {
+    return {
+      send: (data) => {
+        if (isVerbose(data)) return;
+        if (data.data.status === "progress") return;
+        // TODO: 企业微信通知格式适配
+        console.log(data);
+      },
+    };
+  }
+  // 飞书格式
+  if (notify.startsWith("https://open.feishu.cn")) {
+    return {
+      send: (data) => {
+        if (isVerbose(data)) return;
+        if (data.data.status === "progress") return;
+        // TODO: 飞书通知格式适配
+        console.log(data);
+      },
+    };
+  }
+
   return {
     send: (data) => {
       if (isVerbose(data)) return;
