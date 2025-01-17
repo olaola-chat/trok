@@ -5,7 +5,7 @@ import type { Task } from "./type.ts";
 import Hub from "./hub.server.tsx";
 import { basename } from "@std/path";
 import type { GithubWebhookBody } from "./type.ts";
-import Workspace from "./Workspace.ts";
+import Workspace from "./workspace.ts";
 import { render } from "preact-render-to-string";
 import Document from "../ui/Document.tsx";
 

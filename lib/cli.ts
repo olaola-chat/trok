@@ -1,5 +1,5 @@
 import { parseArgs } from "@std/cli/parse-args";
-import Workspace from "./Workspace.ts";
+import Workspace from "./workspace.ts";
 
 const args = parseArgs(Deno.args);
 

@@ -43,11 +43,11 @@ export default {
       case "GET /": {
         if (req.headers.get("upgrade") === "websocket") {
           const ua = req.headers.get("User-Agent")!;
+
           const { socket, response } = Deno.upgradeWebSocket(req);
-          socket.addEventListener(
-            "open",
-            () => SocketHub.registry(socket, ua),
-          );
+
+          SocketHub.registry(socket, ua);
+
           return response;
         }
         return html(render(<Document root={await route("hub")} />));
@@ -55,7 +55,7 @@ export default {
 
       case "POST /": {
         this.broadcast(await req.json() as SocketData);
-        return text('ok');
+        return text("ok");
       }
 
       case "GET /snapshot": {
@@ -100,20 +100,23 @@ abstract class SocketHub {
   }
 
   static registry(socket: WebSocket, ua: string) {
-    const client = { socket, ua };
-    this.clients.push(client);
-    client.socket.addEventListener("close", () => {
-      const index = this.clients.findIndex((item) =>
-        item.socket === client.socket
-      );
+    let timer = 0;
+    socket.addEventListener("open", () => this.clients.push({ socket, ua }));
+    socket.addEventListener("close", () => {
+      const index = this.clients.findIndex((item) => item.socket === socket);
       this.clients.splice(index, 1);
     });
-
-    client.socket.addEventListener(
+    socket.addEventListener(
       "message",
       (e) => {
-        if (e.data === "PING") client.socket.send("PONG");
-        else this.broadcast(JSON.parse(e.data) as SocketData);
+        if (e.data !== "PING") return this.broadcast(JSON.parse(e.data) as SocketData);
+        clearTimeout(timer);
+        socket.send("PONG");
+        // 发送PONG后30秒未收到下一次PING视为心跳检测异常，断开链接
+        timer = setTimeout(
+          () => socket.close(4000, "heartbeat timeout"),
+          30 * 1000,
+        );
       },
     );
   }
