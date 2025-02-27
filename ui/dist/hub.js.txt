@@ -99,7 +99,7 @@ var Socket = class {
     });
     this.client.addEventListener("close", (e) => {
       clearInterval(this.timer);
-      if (globalThis.confirm(`socket\u5DF2\u65AD\u5F00,code: ${e.code}, reason: ${e.reason}`)) globalThis.location.reload();
+      if (globalThis.confirm(`socket\u5DF2\u65AD\u5F00,\u662F\u5426\u91CD\u65B0\u94FE\u63A5? code: ${e.code}, reason: ${e.reason}`)) globalThis.location.reload();
     });
   }
 };

@@ -123,7 +123,7 @@ var Socket = class {
     });
     this.client.addEventListener("close", (e) => {
       clearInterval(this.timer);
-      if (globalThis.confirm(`socket\u5DF2\u65AD\u5F00,code: ${e.code}, reason: ${e.reason}`)) globalThis.location.reload();
+      if (globalThis.confirm(`socket\u5DF2\u65AD\u5F00,\u662F\u5426\u91CD\u65B0\u94FE\u63A5? code: ${e.code}, reason: ${e.reason}`)) globalThis.location.reload();
     });
   }
 };
@@ -159,7 +159,7 @@ function Repo(props) {
   return /* @__PURE__ */ jsx(
     "form",
     {
-      className: "shadow bg-base-100 rounded-2xl p-2 flex flex-col gap-2 border-primary",
+      className: "shadow bg-base-100 rounded-2xl p-2 flex flex-col gap-2 border-primary my-2",
       onSubmit: (e) => {
         e.preventDefault();
         const form = new FormData(e.currentTarget);
@@ -181,6 +181,7 @@ function Repo(props) {
             "input",
             {
               type: "radio",
+              required: true,
               "aria-label": item,
               name: "selector",
               className: "btn btn-xs btn-outline",

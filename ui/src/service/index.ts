@@ -69,7 +69,7 @@ export class Socket {
     this.client.addEventListener("close", (e) => {
       clearInterval(this.timer);
       if (
-        globalThis.confirm(`socket已断开,code: ${e.code}, reason: ${e.reason}`)
+        globalThis.confirm(`socket已断开,是否重新链接? code: ${e.code}, reason: ${e.reason}`)
       ) globalThis.location.reload();
     });
   }

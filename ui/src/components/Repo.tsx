@@ -16,7 +16,7 @@ export default function Repo(
   return (
     <form
       key={props.repo.path}
-      className="shadow bg-base-100 rounded-2xl p-2 flex flex-col gap-2 border-primary"
+      className="shadow bg-base-100 rounded-2xl p-2 flex flex-col gap-2 border-primary my-2"
       onSubmit={(e) => {
         e.preventDefault();
         const form = new FormData(e.currentTarget);
@@ -41,6 +41,7 @@ export default function Repo(
             {props.repo.packages.map((item) => (
               <input
                 type="radio"
+                required
                 aria-label={item}
                 key={item}
                 name="selector"

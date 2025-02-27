@@ -62,7 +62,7 @@ export default abstract class Workspace {
       changedFiles.some((file) =>{
         const fileSegs = file.split("/");
         const packageSegs =  item.replace('./', '').split('/')
-        return fileSegs.every((seg, index) => seg === packageSegs[index])
+        return packageSegs.every((seg, index) => seg === fileSegs[index])
       }
       )
     );
