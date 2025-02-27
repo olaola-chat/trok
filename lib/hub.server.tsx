@@ -53,6 +53,11 @@ export default {
         return html(render(<Document root={await route("hub")} />));
       }
 
+      case "POST /": {
+        this.broadcast(await req.json() as SocketData);
+        return text("ok");
+      }
+
       case "GET /snapshot": {
         return json(SnapshotHub.snapshots);
       }
