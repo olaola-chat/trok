@@ -5,13 +5,8 @@ export default function Document(props: { root: string }) {
   return (
     <html>
       <head>
-        <link
-          href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css"
-          rel="stylesheet"
-          type="text/css"
-        />
-        <script src="https://cdn.tailwindcss.com"></script>
-
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5.0.0-beta.9/daisyui.css" rel="stylesheet" type="text/css" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <script
           type="importmap"
           dangerouslySetInnerHTML={{

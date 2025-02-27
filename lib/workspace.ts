@@ -58,8 +58,13 @@ export default abstract class Workspace {
       .split("\n")
       .filter(Boolean);
 
-    const changedPackages = repository.packages.filter((item) =>
-      changedFiles.some((file) => file.startsWith(item.replace("./", "")))
+    const changedPackages = repository.packages.filter((item) => 
+      changedFiles.some((file) =>{
+        const fileSegs = file.split("/");
+        const packageSegs =  item.replace('./', '').split('/')
+        return fileSegs.every((seg, index) => seg === packageSegs[index])
+      }
+      )
     );
 
     return changedPackages;
@@ -207,7 +212,9 @@ export default abstract class Workspace {
 
     try {
       const { repository, packages, commits } = await this.prepareTask(task);
-      this.notifyClient.send(snapshot({ task, status: "pending", packages, commits }));
+      this.notifyClient.send(
+        snapshot({ task, status: "pending", packages, commits }),
+      );
 
       for (const item of packages) {
         item.status = "progress";
