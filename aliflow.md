@@ -11,7 +11,7 @@ Array<{
 
 2. 准备一个空目录, 将上一步准备的flows.json转移到其中, 然后执行以下命令启动服务
 ```bash
-pm2 start --name aliflow deno -- serve --port 3010 -A jsr:@trok/aliflow
+pm2 start --name aliflow deno -- serve --port 3010 -A jsr:@trok/trok/aliflow
 ```
 
 3. 配置服务代理, 在nginx中反向代理将上一步启动的服务，nginx参考配置如下：
@@ -42,7 +42,7 @@ server {
 
 4. 在云效率构建流程中设置构建脚本为:
 ```bash
-yes | npx deno -A jsr:@trok/trok --selector $selector --notify ws://yourhost/kort/ --verbose && npx deno -A jsr:@trok/aliflow/deploy
+yes | npx deno -A jsr:@trok/trok/cli --selector $selector --notify ws://yourhost/kort/ && npx deno -A jsr:@trok/trok/summaryDist
 ```
 
 5. 设置github触发，将你的服务的/flows/github路由设置到github的webhook的payload URL中，content-type选择application/json, 
