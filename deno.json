@@ -1,11 +1,13 @@
 {
   "name": "@trok/trok",
-  "version": "0.1.49",
+  "version": "0.1.50",
   "license": "MIT",
   "exports": {
-    ".": "./lib/cli.ts",
+    "./cli": "./lib/cli.ts",
     "./workspace": "./lib/workspace.server.tsx",
-    "./hub": "./lib/hub.server.tsx"
+    "./hub": "./lib/hub.server.tsx",
+    "./aliflow": "./lib/aliflow.tsx",
+    "./summaryDist": "./lib/summaryDist.ts"
   },
   "imports": {
     "@std/cli": "jsr:@std/cli@^1.0.9",
