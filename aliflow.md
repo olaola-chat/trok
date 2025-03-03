@@ -42,8 +42,10 @@ server {
 
 4. 在云效率构建流程中设置构建脚本为:
 ```bash
-yes | npx deno -A jsr:@trok/trok/cli --selector $selector --notify ws://yourhost/kort/ && npx deno -A jsr:@trok/trok/summaryDist
+yes | npx deno -A jsr:@trok/trok/cli --selector $selector --notify ws://example.com/kort/ && npx deno -A jsr:@trok/trok/summaryDist
 ```
 
-5. 设置github触发，将你的服务的/flows/github路由设置到github的webhook的payload URL中，content-type选择application/json, 
+5. 设置github触发，将你的服务的/github路由 (如https://example.com/kort/github) 设置到github的webhook的payload URL中，content-type选择application/json, 
 触发方式选择just the push event, 勾选active后选择保存即可
+
+6. 查看打包通知，浏览器打开服务地址(如 https://example.com/kort/)，即可查看打包通知
