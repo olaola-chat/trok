@@ -72,7 +72,7 @@ export default abstract class Workspace {
 
   private static filterPackages(repository: Repository, task: Task) {
     // 路径选择器
-    if (task.selector.startsWith("./")) {
+    if (task.selector.startsWith(".")) {
       return repository.packages.filter((item) => item === task.selector);
     }
 

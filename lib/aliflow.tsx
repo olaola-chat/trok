@@ -67,7 +67,7 @@ if (Deno.env.has("FLOWS_URL")) {
   }
 }
 
-export function isSameGitOrigin(a: string, b: string) {
+function isSameGitOrigin(a: string, b: string) {
   const removeExtname = (pathname: string) =>
     pathname.replace(extname(pathname), "");
 
