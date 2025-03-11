@@ -8,7 +8,7 @@ import type { GithubWebhookBody } from "./type.ts";
 import Workspace from "./workspace.ts";
 import { render } from "preact-render-to-string";
 import Document from "../ui/Document.tsx";
-import { wipeHttpToken } from "./util.ts";
+import { getShortCompare, wipeHttpToken } from "./util.ts";
 
 function html(data: string, status = 200) {
   return new Response(data, {
@@ -68,19 +68,20 @@ export default {
 
       case "POST /github": {
         const data = await req.json() as GithubWebhookBody;
+
         TaskHub.register({
           origin: data.repository.html_url,
           branch: basename(data.ref),
-          selector: basename(data.compare),
+          selector: getShortCompare(data.compare),
           from: `@trok/trok github.${data.sender.login}`,
         });
         return text("提交成功");
       }
 
       case "GET /repos":
-        return json(Workspace.repos.map(item=>({
+        return json(Workspace.repos.map((item) => ({
           ...item,
-          origin: wipeHttpToken(item.origin)
+          origin: wipeHttpToken(item.origin),
         })));
 
       default:

@@ -1,6 +1,7 @@
 import os from "node:os";
 import { join } from "@std/path/join";
 import { resolve } from "@std/path/resolve";
+import { basename } from "@std/path/basename";
 
 export function isSameGitOrigin(a: string, b: string) {
   const parseGitOrigin = (origin: string) => {
@@ -189,7 +190,12 @@ async function readStream(
 
 // 移除url中的username与password, 不要通知出去了
 export function wipeHttpToken(url: string) {
-  if (!url.startsWith('http')) return url
-  const { origin, pathname } = new URL(url)
-  return origin + pathname
+  if (!url.startsWith("http")) return url;
+  const { origin, pathname } = new URL(url);
+  return origin + pathname;
+}
+
+export function getShortCompare(compare: string) {
+  return basename(compare).split("...").map((item) => item.substring(0, 6))
+    .join("...");
 }

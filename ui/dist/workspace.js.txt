@@ -327,7 +327,7 @@ function Workspace() {
     });
   }, []);
   return /* @__PURE__ */ jsxs3("div", { className: "flex gap-2 w-screen", children: [
-    workspace.length ? /* @__PURE__ */ jsx4("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll max-w-96", children: workspace.map((item) => /* @__PURE__ */ jsx4(
+    workspace.length ? /* @__PURE__ */ jsx4("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll", children: workspace.map((item) => /* @__PURE__ */ jsx4(
       Repo,
       {
         repo: item,
