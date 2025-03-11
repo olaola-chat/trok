@@ -8,6 +8,7 @@ import type { GithubWebhookBody } from "./type.ts";
 import Workspace from "./workspace.ts";
 import { render } from "preact-render-to-string";
 import Document from "../ui/Document.tsx";
+import { wipeHttpToken } from "./util.ts";
 
 function html(data: string, status = 200) {
   return new Response(data, {
@@ -77,7 +78,10 @@ export default {
       }
 
       case "GET /repos":
-        return json(Workspace.repos);
+        return json(Workspace.repos.map(item=>({
+          ...item,
+          origin: wipeHttpToken(item.origin)
+        })));
 
       default:
         return text("Not Found", 404);

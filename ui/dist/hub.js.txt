@@ -167,7 +167,9 @@ function TaskState(props) {
               commitItem
             ] })) })
           ] }) : null,
-          taskState.status === "progress" && streamData.length !== 0 && /* @__PURE__ */ jsx(Code, { title: "stream", theme: "info", children: streamData.map((item) => item.data).join("") }),
+          taskState.status === "progress" && streamData.length !== 0 && /* @__PURE__ */ jsx(Code, { title: "stream", theme: "info", children: streamData.map(
+            (item) => item.data
+          ).join("") }),
           taskState.packages?.length !== 0 && /* @__PURE__ */ jsxs(Fragment, { children: [
             /* @__PURE__ */ jsx("h6", { children: "\u9879\u76EE\u5217\u8868" }),
             /* @__PURE__ */ jsx("ul", { className: "text-xs", children: taskState.packages?.map((packageItem) => /* @__PURE__ */ jsx(PkgItem, { item: packageItem })) })
@@ -176,9 +178,10 @@ function TaskState(props) {
       }
     ),
     /* @__PURE__ */ jsxs("div", { className: "chat-footer opacity-50 text-xs mt-1", children: [
-      "from: ",
-      /* @__PURE__ */ jsx("span", { class: "badge badge-xs badge-secondary mr-2", children: taskState.task.from }),
-      new Date(taskState.timestamp).toLocaleString()
+      /* @__PURE__ */ jsx("span", { className: "font-bold", children: new Date(taskState.timestamp).toLocaleString() }),
+      "from:",
+      " ",
+      /* @__PURE__ */ jsx("span", { class: "badge badge-xs badge-secondary mr-2", children: taskState.task.from })
     ] })
   ] }) });
 }

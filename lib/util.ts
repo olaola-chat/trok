@@ -186,3 +186,10 @@ async function readStream(
   }
   return data;
 }
+
+// 移除url中的username与password, 不要通知出去了
+export function wipeHttpToken(url: string) {
+  if (!url.startsWith('http')) return url
+  const { origin, pathname } = new URL(url)
+  return origin + pathname
+}

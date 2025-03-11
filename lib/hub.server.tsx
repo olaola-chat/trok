@@ -4,6 +4,7 @@
 import { render } from "preact-render-to-string";
 import Document from "../ui/Document.tsx";
 import type { Snapshot, SocketData } from "./type.ts";
+import { wipeHttpToken } from "./util.ts";
 
 function html(data: string, status = 200) {
   return new Response(data, {
@@ -59,7 +60,13 @@ export default {
       }
 
       case "GET /snapshot": {
-        return json(SnapshotHub.snapshots);
+        return json(SnapshotHub.snapshots.map((item) => ({
+          ...item,
+          task: {
+            ...item.task,
+            origin: wipeHttpToken(item.task.origin),
+          },
+        })));
       }
 
       default:
@@ -109,7 +116,9 @@ abstract class SocketHub {
     socket.addEventListener(
       "message",
       (e) => {
-        if (e.data !== "PING") return this.broadcast(JSON.parse(e.data) as SocketData);
+        if (e.data !== "PING") {
+          return this.broadcast(JSON.parse(e.data) as SocketData);
+        }
         clearTimeout(timer);
         socket.send("PONG");
         // 发送PONG后30秒未收到下一次PING视为心跳检测异常，断开链接

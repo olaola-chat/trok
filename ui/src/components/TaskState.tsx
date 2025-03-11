@@ -59,9 +59,11 @@ export default function TaskState(props: { snapshots: Snapshot[] }) {
             )
             : null}
 
-          {taskState.status === "progress" && streamData.length!==0 && (
+          {taskState.status === "progress" && streamData.length !== 0 && (
             <Code title="stream" theme="info">
-              {streamData.map((item) => item.data).join("")}
+              {streamData.map((item) =>
+                item.data
+              ).join("")}
             </Code>
           )}
 
@@ -79,8 +81,13 @@ export default function TaskState(props: { snapshots: Snapshot[] }) {
         </div>
 
         <div className="chat-footer opacity-50 text-xs mt-1">
-          from: <span class="badge badge-xs badge-secondary mr-2">{taskState.task.from}</span>
-          {new Date(taskState.timestamp).toLocaleString()}
+          <span className="font-bold">
+            {new Date(taskState.timestamp).toLocaleString()}
+          </span>
+          from:{" "}
+          <span class="badge badge-xs badge-secondary mr-2">
+            {taskState.task.from}
+          </span>
         </div>
       </div>
     </>
