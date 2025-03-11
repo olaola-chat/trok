@@ -1,4 +1,5 @@
 import type { SocketData } from "./type.ts";
+import { wipeHttpToken } from "./util.ts";
 
 export type Notify = string | ((data: SocketData) => void);
 
@@ -33,7 +34,14 @@ export default async function getNotifyClient(
   });
 
   return {
-    send: (data) => clients.map((item) => item.send(data)),
+    send: (data) =>
+      clients.map((item) => {
+        if (data.type === "snapshot") {
+          data.data.task.origin = wipeHttpToken(data.data.task.origin);
+        }
+
+        item.send(data);
+      }),
     close: () => clients.map((item) => item.close?.()),
   };
 }
