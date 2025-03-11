@@ -14,7 +14,8 @@ export function isSameGitOrigin(a: string, b: string) {
   };
 
   const [urlA, urlB] = [a, b].map(parseGitOrigin);
-  return urlA.host === urlB.host && urlA.pathname === urlB.pathname;
+  return urlA.host === urlB.host &&
+    urlA.pathname.replace(".git", "") === urlB.pathname.replace(".git", "");
 }
 
 export function isExecutableExist(executable: string) {
