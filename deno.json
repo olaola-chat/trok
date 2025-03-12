@@ -1,6 +1,6 @@
 {
   "name": "@trok/trok",
-  "version": "0.1.56",
+  "version": "0.1.57",
   "license": "MIT",
   "exports": {
     "./cli": "./lib/cli.ts",

@@ -33,7 +33,7 @@ const stream = (data: StreamData): SocketData => ({
 });
 
 export default abstract class Workspace {
-  static repos = this.findGitRepositories("/Users/yong/Music/QQMusic/app");
+  static repos = this.findGitRepositories(Deno.cwd());
   static currentTask: Task | null = null;
 
   private static notifyClient: Client;
