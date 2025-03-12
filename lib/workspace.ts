@@ -33,7 +33,7 @@ const stream = (data: StreamData): SocketData => ({
 });
 
 export default abstract class Workspace {
-  static repos = this.findGitRepositories(Deno.cwd());
+  static repos = this.findGitRepositories("/Users/yong/Music/QQMusic/app");
   static currentTask: Task | null = null;
 
   private static notifyClient: Client;
@@ -58,14 +58,17 @@ export default abstract class Workspace {
       .split("\n")
       .filter(Boolean);
 
-    const changedPackages = repository.packages.filter((item) => 
-      changedFiles.some((file) =>{
+    const changedPackages = repository.packages.filter((item) =>
+      changedFiles.some((file) => {
         const fileSegs = file.split("/");
-        const packageSegs =  item.replace('./', '').split('/')
-        return packageSegs.every((seg, index) => seg === fileSegs[index])
-      }
-      )
+        const packageSegs = item.replace("./", "").split("/");
+        return packageSegs.every((seg, index) => seg === fileSegs[index]);
+      })
     );
+
+    if (changedFiles.length && changedPackages.length === 0) {
+      return repository.packages.filter((item) => item === ".");
+    }
 
     return changedPackages;
   }
