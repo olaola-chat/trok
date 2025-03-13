@@ -1,17 +1,15 @@
 {
   "version": "4",
   "specifiers": {
-    "jsr:@std/cli@^1.0.9": "1.0.9",
+    "jsr:@std/cli@^1.0.9": "1.0.10",
     "jsr:@std/path@^1.0.8": "1.0.8",
-    "npm:@types/node@*": "22.5.4",
-    "npm:esbuild@0.24.2": "0.24.2",
     "npm:esbuild@~0.24.2": "0.24.2",
     "npm:preact-render-to-string@^6.5.12": "6.5.12_preact@10.25.4",
     "npm:preact@10.25.4": "10.25.4"
   },
   "jsr": {
-    "@std/cli@1.0.9": {
-      "integrity": "557e5865af000efbf3f737dcfea5b8ab86453594f4a9cd8d08c9fa83d8e3f3bc"
+    "@std/cli@1.0.10": {
+      "integrity": "d047f6f4954a5c2827fe0963765ddd3d8b6cc7b7518682842645b95f571539dc"
     },
     "@std/path@1.0.8": {
       "integrity": "548fa456bb6a04d3c1a1e7477986b6cffbce95102d0bb447c67c4ee70e0364be"
@@ -93,12 +91,6 @@
     "@esbuild/win32-x64@0.24.2": {
       "integrity": "sha512-7VTgWzgMGvup6aSqDPLiW5zHaxYJGTO4OokMjIlrCtf+VpEL+cXKtCvg723iguPYI5oaUNdS+/V7OU2gvXVWEg=="
     },
-    "@types/node@22.5.4": {
-      "integrity": "sha512-FDuKUJQm/ju9fT/SeX/6+gBzoPzlVCzfzmGkwKvRHQVxi4BntVbyIwf6a4Xn62mrvndLiml6z/UBXIdEVjQLXg==",
-      "dependencies": [
-        "undici-types"
-      ]
-    },
     "esbuild@0.24.2": {
       "integrity": "sha512-+9egpBW8I3CD5XPe0n6BfT5fxLzxrlDzqydF3aviG+9ni1lDC/OvMHcxqEFV0+LANZG5R1bFMWfUrjVsdwxJvA==",
       "dependencies": [
@@ -137,19 +129,7 @@
     },
     "preact@10.25.4": {
       "integrity": "sha512-jLdZDb+Q+odkHJ+MpW/9U5cODzqnB+fy2EiHSZES7ldV5LK7yjlVzTp7R8Xy6W6y75kfK8iWYtFVH7lvjwrCMA=="
-    },
-    "undici-types@6.19.8": {
-      "integrity": "sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw=="
     }
-  },
-  "remote": {
-    "https://esm.sh/jotai@2.11.0": "770ee860fb93352ca9cc82c011a074e43dcaada07322d8425d18afd983e28a66",
-    "https://esm.sh/mitt@3.0.1": "b0af3b475bd68316859e70eff332533d0fa411644d0ecdf95e8246f1627e2179",
-    "https://esm.sh/stable/react@19.0.0/denonext/react.mjs": "79056e5ef2a1c9601ae005ce23828f148d5e47291a65c573b275e19f19fa282f",
-    "https://esm.sh/v135/jotai@2.11.0/denonext/jotai.mjs": "f4029f2627fe5ec7ac1dd46c358954ca4b116c02073d38e84a834b4b205f0df2",
-    "https://esm.sh/v135/jotai@2.11.0/denonext/react.js": "3dc380057a37be2be5649b86710a0a37cf216840ffa1ac59277b860ec30f6d23",
-    "https://esm.sh/v135/jotai@2.11.0/denonext/vanilla.js": "30de11ed942d06485ffc42e38a6fa305da77ee9cf8d0f0fb7ae999342994f719",
-    "https://esm.sh/v135/mitt@3.0.1/denonext/mitt.mjs": "c8a314c966ba64128035339cd4c7f48c6e15bb27bb19703c99deae857bb4b3cd"
   },
   "workspace": {
     "dependencies": [

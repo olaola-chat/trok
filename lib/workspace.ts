@@ -8,15 +8,7 @@ import type {
   StreamData,
   Task,
 } from "./type.ts";
-import {
-  cloneObj,
-  findPackages,
-  getCommits,
-  getPackageManager,
-  getRepositoryInfo,
-  isSameGitOrigin,
-  streamExec,
-} from "./util.ts";
+import * as util from "./util.ts";
 import getNotifyClient, {
   type Client,
   type Notify,
@@ -24,12 +16,12 @@ import getNotifyClient, {
 
 const snapshot = (data: Omit<Snapshot, "timestamp">): SocketData => ({
   type: "snapshot",
-  data: cloneObj({ ...data, timestamp: Date.now() }),
+  data: util.cloneObj({ ...data, timestamp: Date.now() }),
 });
 
 const stream = (data: StreamData): SocketData => ({
   type: "stream",
-  data: cloneObj(data),
+  data: util.cloneObj(data),
 });
 
 export default abstract class Workspace {
@@ -56,21 +48,33 @@ export default abstract class Workspace {
     const changedFiles = new TextDecoder()
       .decode(stdout)
       .split("\n")
-      .filter(Boolean);
+      .filter(Boolean).map((item) => `./${item}`);
 
-    const changedPackages = repository.packages.filter((item) =>
-      changedFiles.some((file) => {
-        const fileSegs = file.split("/");
-        const packageSegs = item.replace("./", "").split("/");
-        return packageSegs.every((seg, index) => seg === fileSegs[index]);
-      })
+    // 预处理包路径，去除开头的 './' 并记录原始路径
+    const packageEntries = repository.packages.map((pkg) => ({
+      original: pkg,
+      normalized: pkg.replace(/^\.\//, ""),
+    }));
+
+    // 按标准化后的路径长度从长到短排序，确保优先匹配更具体的子包
+    const sortedPackageEntries = [...packageEntries].sort((a, b) =>
+      b.normalized.length - a.normalized.length
     );
 
-    if (changedFiles.length && changedPackages.length === 0) {
-      return repository.packages.filter((item) => item === ".");
+    const changed = new Set<string>();
+
+    for (const file of changedFiles) {
+      for (const pkgEntry of sortedPackageEntries) {
+        const { normalized, original } = pkgEntry;
+        // 检查文件是否精确匹配包路径或以包路径加斜杠开头
+        if (file === normalized || file.startsWith(`${normalized}/`)) {
+          changed.add(original);
+          break; // 找到最长匹配，停止进一步检查
+        }
+      }
     }
 
-    return changedPackages;
+    return Array.from(changed);
   }
 
   private static filterPackages(repository: Repository, task: Task) {
@@ -93,8 +97,8 @@ export default abstract class Workspace {
       if (entity.name !== ".git") {
         this.findGitRepositories(absolutePath, repositories);
       } else {
-        const { origin, branch } = getRepositoryInfo(dirPath);
-        const packages = findPackages(dirPath).map((item) =>
+        const { origin, branch } = util.getRepositoryInfo(dirPath);
+        const packages = util.findPackages(dirPath).map((item) =>
           item.replace(dirPath, ".")
         );
         repositories.push({ origin, branch, path: dirPath, packages });
@@ -108,8 +112,8 @@ export default abstract class Workspace {
     packagePath: string,
   ) {
     const absolutePackagePath = join(repository.path, packagePath);
-    const packageManager = getPackageManager(absolutePackagePath);
-    await streamExec(packageManager, {
+    const packageManager = util.getPackageManager(absolutePackagePath);
+    await util.streamExec(packageManager, {
       cwd: absolutePackagePath,
       args: packageManager === "npm"
         ? ["ci"]
@@ -127,8 +131,8 @@ export default abstract class Workspace {
     packagePath: string,
   ) {
     const absolutePackagePath = join(repository.path, packagePath);
-    const packageManager = getPackageManager(absolutePackagePath);
-    await streamExec(packageManager, {
+    const packageManager = util.getPackageManager(absolutePackagePath);
+    await util.streamExec(packageManager, {
       cwd: absolutePackagePath,
       args: ["run", "build"],
       onStreamData: (data) => {
@@ -141,7 +145,7 @@ export default abstract class Workspace {
 
   // 检查打包产物是否污染仓库
   private static async checkRepositoryDirty(repository: Repository) {
-    const { stdout } = await streamExec("git", {
+    const { stdout } = await util.streamExec("git", {
       cwd: repository.path,
       args: ["status", "-s", repository.path],
       onStreamData: (data) => {
@@ -168,7 +172,7 @@ export default abstract class Workspace {
 
   private static async prepareTask(task: Task) {
     const repository = this.repos.find((repo) =>
-      isSameGitOrigin(repo.origin, task.origin)
+      util.isSameGitOrigin(repo.origin, task.origin)
     );
     if (!repository) {
       throw new Error(`repository ${task.origin} not found`);
@@ -178,7 +182,7 @@ export default abstract class Workspace {
     }
 
     // 拉取最新代码
-    await streamExec("git", {
+    await util.streamExec("git", {
       cwd: repository.path,
       args: ["pull"],
       onStreamData: (data) => {
@@ -197,7 +201,7 @@ export default abstract class Workspace {
     if (!packages.length) throw new Error("no package found");
 
     const commits = task.selector.includes("...")
-      ? getCommits(repository.path, task.selector)
+      ? util.getCommits(repository.path, task.selector)
       : [];
     return { repository, packages, commits };
   }
