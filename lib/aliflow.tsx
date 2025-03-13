@@ -4,6 +4,7 @@
 import { render } from "preact-render-to-string";
 import { extname, resolve, basename } from "@std/path";
 import hubServer from "./hub.server.tsx";
+import { getShortCompare } from "./util.ts";
 
 type Flow = {
   origin: string;
@@ -132,7 +133,7 @@ export default {
         const data = await req.json() as GithubWebhookBody;
         const origin = data.repository.html_url;
         const branch = basename(data.ref);
-        const selector = basename(data.compare);
+        const selector = getShortCompare(data.compare);
         return await dispatch({
           origin,
           branch,
