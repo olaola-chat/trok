@@ -48,7 +48,8 @@ export default abstract class Workspace {
     const changedFiles = new TextDecoder()
       .decode(stdout)
       .split("\n")
-      .filter(Boolean).map((item) => `./${item}`);
+      .filter(Boolean)
+
 
     // 预处理包路径，去除开头的 './' 并记录原始路径
     const packageEntries = repository.packages.map((pkg) => ({
@@ -67,13 +68,12 @@ export default abstract class Workspace {
       for (const pkgEntry of sortedPackageEntries) {
         const { normalized, original } = pkgEntry;
         // 检查文件是否精确匹配包路径或以包路径加斜杠开头
-        if (file === normalized || file.startsWith(`${normalized}/`)) {
+        if (file === normalized || file.startsWith(`${normalized}`)) {
           changed.add(original);
           break; // 找到最长匹配，停止进一步检查
         }
       }
     }
-
     return Array.from(changed);
   }
 
