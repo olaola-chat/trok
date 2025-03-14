@@ -2,9 +2,10 @@
 /** @jsxImportSource npm:preact@10.25.4 */
 
 import { render } from "preact-render-to-string";
-import { extname, resolve, basename } from "@std/path";
-import hubServer from "./hub.server.tsx";
-import { getShortCompare } from "./util.ts";
+import { basename, resolve } from "@std/path";
+import hub from "./hub.tsx";
+import { getShortCompare, html, isSameGitOrigin, json } from "../lib/util.ts";
+import type { GithubWebhookBody } from "../lib/type.ts";
 
 type Flow = {
   origin: string;
@@ -21,13 +22,6 @@ type FlowTask = {
   from: string;
 };
 
-type GithubWebhookBody = {
-  ref: string;
-  compare: string;
-  repository: { html_url: string };
-  sender: { login: string };
-};
-
 type FlowWebhookBody = {
   errorCode: string;
   errorMsg: string;
@@ -36,20 +30,6 @@ type FlowWebhookBody = {
   object: true;
   successful: true;
 };
-
-function json(data: object, status = 200) {
-  return new Response(JSON.stringify(data), {
-    headers: { "content-type": "application/json; charset=UTF-8" },
-    status,
-  });
-}
-
-function html(jsxElement: preact.JSX.Element) {
-  return new Response(
-    render(<Document>{jsxElement}</Document>),
-    { headers: { "content-type": "text/html; charset=UTF-8" } },
-  );
-}
 
 let flows: Flow[] = [];
 
@@ -66,24 +46,6 @@ if (Deno.env.has("FLOWS_URL")) {
     console.error(`未找到流水线配置文件`, (err as Error).message);
     throw err;
   }
-}
-
-function isSameGitOrigin(a: string, b: string) {
-  const removeExtname = (pathname: string) =>
-    pathname.replace(extname(pathname), "");
-
-  const parseGitOrigin = (origin: string) => {
-    let cookedOrigin = origin;
-    // 补全转换scp形式的origin
-    if (origin.startsWith("git@")) {
-      cookedOrigin = `ssh://${origin.replace(":", "/")}`;
-    }
-    return new URL(cookedOrigin);
-  };
-
-  const [urlA, urlB] = [a, b].map(parseGitOrigin);
-  return urlA.host === urlB.host &&
-    removeExtname(urlA.pathname) === removeExtname(urlB.pathname);
 }
 
 async function dispatch(task: FlowTask) {
@@ -104,8 +66,16 @@ async function dispatch(task: FlowTask) {
   });
 
   const data = await res.json() as FlowWebhookBody;
-  console.log(`aliflow webhook response body: ${JSON.stringify(data, null, 2)}`);
-  if (data.successful) return html(<Success />);
+  console.log(
+    `aliflow webhook response body: ${JSON.stringify(data, null, 2)}`,
+  );
+  if (data.successful) {
+    return html(render(
+      <Document>
+        <Success />
+      </Document>,
+    ));
+  }
   return json(data);
 }
 
@@ -115,7 +85,11 @@ export default {
 
     switch (`${req.method} ${pathname}`) {
       case "GET /flows/": {
-        return html(<Flows />);
+        return html(render(
+          <Document>
+            <Flows />
+          </Document>,
+        ));
       }
 
       case "POST /dispatch": {
@@ -125,7 +99,7 @@ export default {
           origin: search.get("origin")!,
           branch: search.get("branch")!,
           selector: search.get("selector")!,
-          from: "@trok/aliflow.ui",
+          from: "trok.aliflow.ui",
         });
       }
 
@@ -138,12 +112,12 @@ export default {
           origin,
           branch,
           selector,
-          from: `@trok/aliflow.github.${data.sender.login}`,
+          from: `trok.aliflow.github.${data.sender.login}`,
         });
       }
 
       default:
-        return await hubServer.fetch(req);
+        return await hub.fetch(req);
     }
   },
 };
@@ -152,8 +126,13 @@ function Document(props: { children: preact.JSX.Element }) {
   return (
     <html>
       <head>
-        <link href="https://cdn.jsdelivr.net/npm/daisyui@5.0.0-beta.9/daisyui.css" rel="stylesheet" type="text/css" />
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <link
+          href="https://cdn.jsdelivr.net/npm/daisyui@5.0.0-beta.9/daisyui.css"
+          rel="stylesheet"
+          type="text/css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4">
+        </script>
       </head>
       <body>{props.children}</body>
     </html>
@@ -187,7 +166,9 @@ function Flows() {
                 className="input input-bordered input-sm"
                 placeholder="eg: ./act/act-center"
               />
-              <button class="btn btn-primary btn-sm">提交打包任务</button>
+              <button type="submit" class="btn btn-primary btn-sm">
+                提交打包任务
+              </button>
             </form>
           );
         })}

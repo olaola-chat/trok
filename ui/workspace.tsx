@@ -2,6 +2,6 @@
 /** @jsxImportSource preact */
 
 import { render } from "preact";
-import Workspace from "../components/Workspace.tsx";
-
+import Workspace from "./src/components/Workspace.tsx";
 render(<Workspace />, document.getElementById("root")!);
+

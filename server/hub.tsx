@@ -2,38 +2,8 @@
 /** @jsxImportSource preact */
 
 import { render } from "preact-render-to-string";
-import Document from "../ui/Document.tsx";
-import type { Snapshot, SocketData } from "./type.ts";
-import { wipeHttpToken } from "./util.ts";
-
-function html(data: string, status = 200) {
-  return new Response(data, {
-    headers: { "content-type": "text/html; charset=UTF-8" },
-    status,
-  });
-}
-
-function json(data: object, status = 200) {
-  return new Response(JSON.stringify(data), {
-    headers: { "content-type": "application/json; charset=UTF-8" },
-    status,
-  });
-}
-
-function text(data: string, status = 200) {
-  return new Response(data, {
-    headers: { "content-type": "text/plain; charset=UTF-8" },
-    status,
-  });
-}
-
-async function route(path: string) {
-  const url = new URL(`../ui/dist/${path}.js.txt`, import.meta.url);
-  if (url.protocol.startsWith("http")) {
-    return await fetch(url).then((res) => res.text());
-  }
-  return Deno.readTextFileSync(url);
-}
+import type { Snapshot, SocketData } from "../lib/type.ts";
+import { getScript, html, json, text, wipeHttpToken } from "../lib/util.ts";
 
 export default {
   broadcast: (data: SocketData) => SocketHub.broadcast(data),
@@ -51,7 +21,7 @@ export default {
 
           return response;
         }
-        return html(render(<Document root={await route("hub")} />));
+        return html(render(await renderUI()));
       }
 
       case "POST /": {
@@ -129,4 +99,36 @@ abstract class SocketHub {
       },
     );
   }
+}
+
+async function renderUI() {
+  const script = await getScript("hub.js");
+
+  const imports = {
+    "imports": {
+      "preact": "https://esm.sh/preact@10.23.1",
+      "preact/": "https://esm.sh/preact@10.23.1/",
+    },
+  };
+
+  return (
+    <html>
+      <head>
+        <link
+          href="https://cdn.jsdelivr.net/npm/daisyui@5.0.0-beta.9/daisyui.css"
+          rel="stylesheet"
+          type="text/css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" />
+        <script
+          type="importmap"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(imports) }}
+        />
+      </head>
+      <body className="flex gap-2">
+        <div id="root" />
+        <script type="module" dangerouslySetInnerHTML={{ __html: script }} />
+      </body>
+    </html>
+  );
 }

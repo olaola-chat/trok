@@ -14,7 +14,7 @@ const verbose = Boolean(args.verbose);
 
 Workspace.run({
   task: {
-    from: trimBoolArg("from", "@trok/trok.cli"),
+    from: trimBoolArg("from", "trok.cli"),
     id: globalThis.crypto.randomUUID(),
     origin: trimBoolArg("origin", origin),
     branch: trimBoolArg("branch", branch),

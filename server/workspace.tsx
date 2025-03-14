@@ -1,43 +1,20 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource preact */
 
-import type { Task } from "./type.ts";
-import Hub from "./hub.server.tsx";
+import type { Task } from "../lib/type.ts";
+import hub from "./hub.tsx";
 import { basename } from "@std/path";
-import type { GithubWebhookBody } from "./type.ts";
-import Workspace from "./workspace.ts";
+import type { GithubWebhookBody } from "../lib/type.ts";
+import Workspace from "../lib/workspace.ts";
 import { render } from "preact-render-to-string";
-import Document from "../ui/Document.tsx";
-import { getShortCompare, wipeHttpToken } from "./util.ts";
-
-function html(data: string, status = 200) {
-  return new Response(data, {
-    headers: { "content-type": "text/html; charset=UTF-8" },
-    status,
-  });
-}
-
-function json(data: object, status = 200) {
-  return new Response(JSON.stringify(data), {
-    headers: { "content-type": "application/json; charset=UTF-8" },
-    status,
-  });
-}
-
-function text(data: string, status = 200) {
-  return new Response(data, {
-    headers: { "content-type": "text/plain; charset=UTF-8" },
-    status,
-  });
-}
-
-async function router(path: string) {
-  const url = new URL(`../ui/dist/${path}.js.txt`, import.meta.url);
-  if (url.protocol.startsWith("http")) {
-    return await fetch(url).then((res) => res.text());
-  }
-  return Deno.readTextFileSync(url);
-}
+import {
+  getScript,
+  getShortCompare,
+  html,
+  json,
+  text,
+  wipeHttpToken,
+} from "../lib/util.ts";
 
 export default {
   async fetch(req: Request): Promise<Response> {
@@ -46,10 +23,10 @@ export default {
     const route = `${req.method} ${pathname}`;
 
     if (route === "GET /" && req.headers.get("upgrade") !== "websocket") {
-      return html(render(<Document root={await router("workspace")} />));
+      return html(render(await renderUI()));
     }
 
-    const response = await Hub.fetch(req);
+    const response = await hub.fetch(req);
     if (response.status !== 404) return response;
 
     switch (route) {
@@ -62,7 +39,7 @@ export default {
           branch: string;
           selector: string;
         };
-        TaskHub.register({ ...data, from: "@trok/trok.ui" });
+        TaskHub.register({ ...data, from: "trok.workspace.ui" });
         return text("提交成功");
       }
 
@@ -73,7 +50,7 @@ export default {
           origin: data.repository.html_url,
           branch: basename(data.ref),
           selector: getShortCompare(data.compare),
-          from: `@trok/trok github.${data.sender.login}`,
+          from: `trok.workspace.github.${data.sender.login}`,
         });
         return text("提交成功");
       }
@@ -105,11 +82,43 @@ class TaskHub {
       if (item) {
         await Workspace.run({
           task: item,
-          notify: (data) => Hub.broadcast(data),
+          notify: (data) => hub.broadcast(data),
           verbose: true,
         });
       }
     }
     setTimeout(() => this.dispatch(), 3000);
   }
+}
+
+async function renderUI() {
+  const script = await getScript("workspace.js");
+
+  const imports = {
+    "imports": {
+      "preact": "https://esm.sh/preact@10.23.1",
+      "preact/": "https://esm.sh/preact@10.23.1/",
+    },
+  };
+
+  return (
+    <html>
+      <head>
+        <link
+          href="https://cdn.jsdelivr.net/npm/daisyui@5.0.0-beta.9/daisyui.css"
+          rel="stylesheet"
+          type="text/css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" />
+        <script
+          type="importmap"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(imports) }}
+        />
+      </head>
+      <body className="flex gap-2">
+        <div id="root" />
+        <script type="module" dangerouslySetInnerHTML={{ __html: script }} />
+      </body>
+    </html>
+  );
 }

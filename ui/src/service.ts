@@ -4,8 +4,8 @@ import type {
   Snapshot,
   SocketData,
   Task,
-} from "../../../lib/type.ts";
-import mitt from "../../../lib/mitt.ts";
+} from "../../lib/type.ts";
+import mitt from "../../lib/mitt.ts";
 
 export function getApi(path: string) {
   return `${location.href}${path}`;
@@ -17,6 +17,31 @@ function notifyMe(message: string) {
   else if (Notification.permission !== "denied") {
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") new Notification(message);
+    });
+  }
+}
+
+export class Socket {
+  static mitt = mitt<{ data: SocketData }>();
+  static client = new WebSocket(location.href.replace("http", "ws"));
+  static timer: number;
+
+  static {
+    this.client.addEventListener("open", () => this.client.send("PING"));
+    this.client.addEventListener("message", (e) => {
+      if (e.data === "PONG") {
+        setTimeout(() => this.client.send("PING"), 10 * 1000);
+      } else {
+        const data = JSON.parse(e.data) as SocketData;
+        this.mitt.emit("data", data);
+      }
+    });
+
+    this.client.addEventListener("close", (e) => {
+      clearInterval(this.timer);
+      if (
+        globalThis.confirm(`socket已断开,是否重新链接? code: ${e.code}, reason: ${e.reason}`)
+      ) globalThis.location.reload();
     });
   }
 }
@@ -50,30 +75,7 @@ export function useTaskHubList() {
   return { list, fetchTasks };
 }
 
-export class Socket {
-  static mitt = mitt<{ data: SocketData }>();
-  static client = new WebSocket(location.href.replace("http", "ws"));
-  static timer: number;
 
-  static {
-    this.client.addEventListener("open", () => this.client.send("PING"));
-    this.client.addEventListener("message", (e) => {
-      if (e.data === "PONG") {
-        setTimeout(() => this.client.send("PING"), 10 * 1000);
-      } else {
-        const data = JSON.parse(e.data) as SocketData;
-        this.mitt.emit("data", data);
-      }
-    });
-
-    this.client.addEventListener("close", (e) => {
-      clearInterval(this.timer);
-      if (
-        globalThis.confirm(`socket已断开,是否重新链接? code: ${e.code}, reason: ${e.reason}`)
-      ) globalThis.location.reload();
-    });
-  }
-}
 
 export function useSnapshots() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);

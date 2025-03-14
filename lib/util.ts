@@ -200,3 +200,32 @@ export function getShortCompare(compare: string) {
   return basename(compare).split("...").map((item) => item.substring(0, 6))
     .join("...");
 }
+
+export function html(data: string, status = 200) {
+  return new Response(data, {
+    headers: { "content-type": "text/html; charset=UTF-8" },
+    status,
+  });
+}
+
+export function json(data: object, status = 200) {
+  return new Response(JSON.stringify(data), {
+    headers: { "content-type": "application/json; charset=UTF-8" },
+    status,
+  });
+}
+
+export function text(data: string, status = 200) {
+  return new Response(data, {
+    headers: { "content-type": "text/plain; charset=UTF-8" },
+    status,
+  });
+}
+
+export async function getScript(path: `${string}.js`) {
+  const url = new URL(`../ui/dist/${path}`, import.meta.url);
+  if (url.protocol.startsWith("http")) {
+    return await fetch(url).then((res) => res.text());
+  }
+  return Deno.readTextFileSync(url);
+}
