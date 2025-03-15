@@ -1,6 +1,6 @@
 {
   "name": "@trok/trok",
-  "version": "0.1.62",
+  "version": "0.1.63",
   "license": "MIT",
   "exports": {
     "./cli": "./lib/cli.ts",
@@ -19,7 +19,7 @@
   "tasks": {
     "serve:workspace": "deno serve --watch -A --host 127.0.0.1 server/workspace.tsx",
     "serve:hub": "deno serve --watch -A --host 127.0.0.1 server/hub.tsx",
-    "test:cli": "deno -A lib/cli.ts --notify https://api.sleeplessplanet.com,https://github.com/asdf/80asdf",
+    "test:cli": "deno -A lib/cli.ts",
     "buildUI": "deno -A npm:esbuild ui/workspace.tsx ui/hub.tsx --bundle --outdir=ui/dist --format=esm"
   },
 

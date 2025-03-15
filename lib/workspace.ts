@@ -62,10 +62,10 @@ export default abstract class Workspace {
       .filter(Boolean)
 
 
-    // 预处理包路径，去除开头的 './' 并记录原始路径
+    // 预处理包路径，去除开头的 './' 或 '.' 并记录原始路径
     const packageEntries = repository.packages.map((pkg) => ({
       original: pkg,
-      normalized: pkg.replace(/^\.\//, ""),
+      normalized: pkg.replace(/^\.\//, "").replace(/^\./, ""),
     }));
 
     // 按标准化后的路径长度从长到短排序，确保优先匹配更具体的子包
@@ -74,7 +74,7 @@ export default abstract class Workspace {
     );
 
     const changed = new Set<string>();
-
+    
     for (const file of changedFiles) {
       for (const pkgEntry of sortedPackageEntries) {
         const { normalized, original } = pkgEntry;
