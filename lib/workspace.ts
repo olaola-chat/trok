@@ -13,6 +13,7 @@ import getNotifyClient, {
   type Client,
   type Notify,
 } from "./getNotifyClient.ts";
+import { resolve } from "@std/path";
 
 const snapshot = (data: Omit<Snapshot, "timestamp">): SocketData => ({
   type: "snapshot",
@@ -25,7 +26,17 @@ const stream = (data: StreamData): SocketData => ({
 });
 
 export default abstract class Workspace {
-  static repos = this.findGitRepositories(Deno.cwd());
+  static #dir = Deno.args[0] || Deno.cwd();
+  static set dir(path: string){
+    this.#dir = path;
+    this.repos = this.findGitRepositories(this.#dir); 
+  }
+  static get dir(){
+    return this.#dir;
+  }
+
+  static repos: Repository[] = this.findGitRepositories(this.#dir);
+
   static currentTask: Task | null = null;
 
   private static notifyClient: Client;
@@ -101,7 +112,7 @@ export default abstract class Workspace {
         const packages = util.findPackages(dirPath).map((item) =>
           item.replace(dirPath, ".")
         );
-        repositories.push({ origin, branch, path: dirPath, packages });
+        repositories.push({ origin, branch, path: resolve( dirPath), packages });
       }
     }
     return repositories;

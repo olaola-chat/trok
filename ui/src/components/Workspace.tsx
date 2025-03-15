@@ -27,7 +27,7 @@ export default function Workspace() {
     <div className="flex gap-2 w-screen">
       {workspace.length
         ? (
-          <div className="p-2 bg-base-200 h-screen overflow-y-scroll">
+          <div className="p-2 bg-base-200 h-screen overflow-y-scroll max-w-sm">
             {workspace.map((item) => (
               <Repo
                 repo={item}

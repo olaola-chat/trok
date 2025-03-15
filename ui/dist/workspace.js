@@ -1,1 +1,344 @@
-import{render as R}from"preact";import{useCallback as b,useEffect as u,useState as g}from"preact/hooks";function v(t){return t=t||new Map,{all:t,on(e,s){let n=t.get(e);n?n.push(s):t.set(e,[s])},off(e,s){let n=t.get(e);n&&(s?n.splice(n.indexOf(s)>>>0,1):t.set(e,[]))},emit(e,s){let n=t.get(e);n&&n.slice().map(r=>{r(s)}),n=t.get("*"),n&&n.slice().map(r=>{r(e,s)})}}}function c(t){return`${location.href}${t}`}function w(t){"Notification"in window?Notification.permission==="granted"?new Notification(t):Notification.permission!=="denied"&&Notification.requestPermission().then(e=>{e==="granted"&&new Notification(t)}):alert("\u5F53\u524D\u6D4F\u89C8\u5668\u4E0D\u652F\u6301\u684C\u9762\u901A\u77E5")}var d=class{static mitt=v();static client=new WebSocket(location.href.replace("http","ws"));static timer;static{this.client.addEventListener("open",()=>this.client.send("PING")),this.client.addEventListener("message",e=>{if(e.data==="PONG")setTimeout(()=>this.client.send("PING"),10*1e3);else{let s=JSON.parse(e.data);this.mitt.emit("data",s)}}),this.client.addEventListener("close",e=>{clearInterval(this.timer),globalThis.confirm(`socket\u5DF2\u65AD\u5F00,\u662F\u5426\u91CD\u65B0\u94FE\u63A5? code: ${e.code}, reason: ${e.reason}`)&&globalThis.location.reload()})}};function x(){let[t,e]=g([]),s=b(()=>{fetch(c("repos")).then(n=>n.json()).then(e)},[]);return u(()=>void s(),[]),{workspace:t,fetchWorkspace:s}}function E(){let[t,e]=g([]),s=b(()=>{fetch(c("task")).then(n=>n.json()).then(e)},[]);return u(()=>void s(),[]),{list:t,fetchTasks:s}}function N(){let[t,e]=g([]);return u(()=>{fetch(c("snapshot")).then(s=>s.json()).then(e).then(()=>{d.mitt.on("data",s=>{s.type==="snapshot"&&(w({pending:"\u5F00\u59CB\u5904\u7406",progress:"\u5F00\u59CB\u6253\u5305",resolved:"\u5904\u7406\u5B8C\u6210",rejected:"\u5904\u7406\u5931\u8D25"}[s.data.status]),e(n=>[...n,s.data]))})})},[]),t}import{useEffect as W}from"preact/hooks";import{useEffect as H,useState as S}from"preact/hooks";import{Fragment as p,jsx as a,jsxs as i}from"preact/jsx-runtime";function h(){let t=N(),e=Object.values(Object.groupBy(t,s=>s.task.id));return a("div",{className:"p-2 h-screen overflow-y-scroll grow",ref:s=>s?.scrollTo(0,s.scrollHeight),children:e.map((s,n)=>a(K,{snapshots:s},n))})}function K(t){let[e]=t.snapshots.sort((r,l)=>{let f=l.timestamp-r.timestamp;return f!==0?f:r.status==="pending"?1:-1}),[s,n]=S([]);return H(()=>{d.mitt.on("data",r=>{r.type==="stream"&&r.data.task.id===e.task.id&&n(l=>[...l,r.data])})},[]),a(p,{children:i("div",{className:"flex flex-col items-start chat chat-start mb-5",children:[i("div",{className:"chat-header opacity-50 mb-1 text-xs ",children:[a("span",{children:e.task.origin}),a("span",{className:"text-xs badge badge-xs badge-primary mx-2",children:e.task.branch}),a("span",{className:"kbd kbd-xs",children:e.task.selector})]}),i("div",{className:`chat-bubble min-w-80 relative chat-bubble-${{pending:"neutral",progress:"neutral",resolved:"success",rejected:"error"}[e.status]}`,children:[e.logs&&a(T,{logs:e.logs}),e.commits?.length?i(p,{children:[a("h6",{children:"\u63D0\u4EA4\u8BB0\u5F55"}),a("ul",{className:"text-xs",children:e.commits.map(r=>i("li",{children:["\u2726 ",r]}))})]}):null,e.status==="progress"&&s.length!==0&&a(y,{title:"stream",theme:"info",children:s.map(r=>r.data).join("")}),e.packages?.length!==0&&i(p,{children:[a("h6",{children:"\u9879\u76EE\u5217\u8868"}),a("ul",{className:"text-xs",children:e.packages?.map(r=>a(L,{item:r}))})]})]}),i("div",{className:"chat-footer opacity-50 text-xs mt-1",children:[a("span",{className:"font-bold",children:new Date(e.timestamp).toLocaleString()}),"from:"," ",a("span",{class:"badge badge-xs badge-secondary mr-2",children:e.task.from})]})]})})}function L(t){return i(p,{children:[i("li",{className:"text-sm flex items-center gap-2",children:[{progress:a("span",{className:"loading loading-spinner loading-xs"}),pending:a("span",{className:"text-warning",children:"-"}),rejected:a("span",{className:"text-error",children:"\u2717"}),resolved:a("span",{className:"text-primary",children:"\u2713"})}[t.item.status],t.item.path]}),t.item.logs&&a(T,{logs:t.item.logs})]})}function y(t){return a("pre",{title:t.title,className:`text-xs overflow-x-scroll bg-${t.theme}-content rounded text-${t.theme} p-2 my-2 max-h-80 max-w-5xl`,ref:e=>e?.scrollTo(0,e.scrollHeight),children:a("code",{children:t.children})})}function T(t){return typeof t.logs=="string"?t.logs:i(p,{children:[a(y,{title:"stdout",theme:"info",children:t.logs.stdout}),t.logs.signal,a(y,{title:"stderr",theme:"error",children:t.logs.stderr})]})}import{jsx as o,jsxs as m}from"preact/jsx-runtime";function k(){let{workspace:t}=x(),{list:e,fetchTasks:s}=E();return W(()=>{d.mitt.on("data",n=>{n.type==="snapshot"&&s()})},[]),m("div",{className:"flex gap-2 w-screen",children:[t.length?o("div",{className:"p-2 bg-base-200 h-screen overflow-y-scroll",children:t.map(n=>o(C,{repo:n,onCreateTask:async(r,l,f)=>{await fetch(c("task"),{method:"POST",body:JSON.stringify({origin:r,branch:l,selector:f})}),s()}}))}):null,o(D,{list:e}),o(h,{})]})}function C(t){return o("form",{className:"shadow bg-base-100 rounded-2xl p-2 flex flex-col gap-2 border-primary my-2",onSubmit:e=>{e.preventDefault();let s=new FormData(e.currentTarget);t.onCreateTask(t.repo.origin,t.repo.branch,s.get("selector")),e.currentTarget.reset()},children:m("div",{className:"collapse collapse-arrow border",children:[o("input",{type:"checkbox"}),m("div",{className:"collapse-title",children:[o("span",{children:t.repo.origin}),o("span",{className:"badge badge-primary badge ml-2",children:t.repo.branch})]}),m("div",{className:"collapse-content",children:[o("div",{className:"flex flex-wrap justify-center gap-1",children:t.repo.packages.map(e=>o("input",{type:"radio",required:!0,"aria-label":e,name:"selector",className:"btn btn-xs btn-outline",value:e},e))}),o("button",{type:"submit",className:"btn btn-primary block btn-wide mt-5 mx-auto btn-sm",children:"\u63D0\u4EA4\u4EFB\u52A1"})]})]})},t.repo.path)}function D(t){return o("div",{className:"stack fixed bottom-2 right-2",children:t.list.map(e=>m("div",{className:"shadow rounded-lg p-4 bg-base-100 border text-center text-sm",children:[e.origin,o("span",{className:"badge badge-primary badge-sm mx-2",children:e.branch}),o("span",{className:"kbd kbd-sm",children:e.selector})]}))})}import{jsx as G}from"preact/jsx-runtime";R(G(k,{}),document.getElementById("root"));
+// ui/workspace.tsx
+import { render } from "preact";
+
+// ui/src/service.ts
+import { useCallback, useEffect, useState } from "preact/hooks";
+
+// lib/mitt.ts
+function mitt(all) {
+  all = all || /* @__PURE__ */ new Map();
+  return {
+    /**
+     * A Map of event names to registered handler functions.
+     */
+    all,
+    /**
+     * Register an event handler for the given type.
+     * @param {string|symbol} type Type of event to listen for, or `'*'` for all events
+     * @param {Function} handler Function to call in response to given event
+     * @memberOf mitt
+     */
+    on(type, handler) {
+      const handlers = all.get(type);
+      if (handlers) {
+        handlers.push(handler);
+      } else {
+        all.set(type, [handler]);
+      }
+    },
+    /**
+     * Remove an event handler for the given type.
+     * If `handler` is omitted, all handlers of the given type are removed.
+     * @param {string|symbol} type Type of event to unregister `handler` from (`'*'` to remove a wildcard handler)
+     * @param {Function} [handler] Handler function to remove
+     * @memberOf mitt
+     */
+    off(type, handler) {
+      const handlers = all.get(type);
+      if (handlers) {
+        if (handler) {
+          handlers.splice(handlers.indexOf(handler) >>> 0, 1);
+        } else {
+          all.set(type, []);
+        }
+      }
+    },
+    /**
+     * Invoke all handlers for the given type.
+     * If present, `'*'` handlers are invoked after type-matched handlers.
+     *
+     * Note: Manually firing '*' handlers is not supported.
+     *
+     * @param {string|symbol} type The event type to invoke
+     * @param {Any} [evt] Any value (object is recommended and powerful), passed to each handler
+     * @memberOf mitt
+     */
+    emit(type, evt) {
+      let handlers = all.get(type);
+      if (handlers) {
+        handlers.slice().map((handler) => {
+          handler(evt);
+        });
+      }
+      handlers = all.get("*");
+      if (handlers) {
+        handlers.slice().map((handler) => {
+          handler(type, evt);
+        });
+      }
+    }
+  };
+}
+
+// ui/src/service.ts
+function getApi(path) {
+  return `${location.href}${path}`;
+}
+function notifyMe(message) {
+  if (!("Notification" in window)) alert("\u5F53\u524D\u6D4F\u89C8\u5668\u4E0D\u652F\u6301\u684C\u9762\u901A\u77E5");
+  else if (Notification.permission === "granted") new Notification(message);
+  else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then((permission) => {
+      if (permission === "granted") new Notification(message);
+    });
+  }
+}
+var Socket = class {
+  static mitt = mitt();
+  static client = new WebSocket(location.href.replace("http", "ws"));
+  static timer;
+  static {
+    this.client.addEventListener("open", () => this.client.send("PING"));
+    this.client.addEventListener("message", (e) => {
+      if (e.data === "PONG") {
+        setTimeout(() => this.client.send("PING"), 10 * 1e3);
+      } else {
+        const data = JSON.parse(e.data);
+        this.mitt.emit("data", data);
+      }
+    });
+    this.client.addEventListener("close", (e) => {
+      clearInterval(this.timer);
+      if (globalThis.confirm(`socket\u5DF2\u65AD\u5F00,\u662F\u5426\u91CD\u65B0\u94FE\u63A5? code: ${e.code}, reason: ${e.reason}`)) globalThis.location.reload();
+    });
+  }
+};
+function useWorkspace() {
+  const [workspace, setWorkspace] = useState([]);
+  const fetchWorkspace = useCallback(
+    () => {
+      void fetch(getApi("repos")).then((res) => res.json()).then(
+        setWorkspace
+      );
+    },
+    []
+  );
+  useEffect(() => void fetchWorkspace(), []);
+  return { workspace, fetchWorkspace };
+}
+function useTaskHubList() {
+  const [list, setList] = useState([]);
+  const fetchTasks = useCallback(
+    () => {
+      fetch(getApi("task")).then((res) => res.json()).then(setList);
+    },
+    []
+  );
+  useEffect(() => void fetchTasks(), []);
+  return { list, fetchTasks };
+}
+function useSnapshots() {
+  const [snapshots, setSnapshots] = useState([]);
+  useEffect(() => {
+    fetch(getApi("snapshot")).then((res) => res.json()).then(setSnapshots).then(
+      () => {
+        Socket.mitt.on("data", (data) => {
+          if (data.type !== "snapshot") return;
+          notifyMe(
+            {
+              pending: "\u5F00\u59CB\u5904\u7406",
+              progress: "\u5F00\u59CB\u6253\u5305",
+              resolved: "\u5904\u7406\u5B8C\u6210",
+              rejected: "\u5904\u7406\u5931\u8D25"
+            }[data.data.status]
+          );
+          setSnapshots((snapshot) => [...snapshot, data.data]);
+        });
+      }
+    );
+  }, []);
+  return snapshots;
+}
+
+// ui/src/components/Workspace.tsx
+import { useEffect as useEffect3 } from "preact/hooks";
+
+// ui/src/components/Hub.tsx
+import { useEffect as useEffect2, useState as useState2 } from "preact/hooks";
+import { Fragment, jsx, jsxs } from "preact/jsx-runtime";
+function Hub() {
+  const snapshots = useSnapshots();
+  const snapShotGroups = Object.values(
+    Object.groupBy(snapshots, (item) => item.task.id)
+  );
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      className: "p-2 h-screen overflow-y-scroll grow",
+      ref: (el) => el?.scrollTo(0, el.scrollHeight),
+      children: snapShotGroups.map((item, index) => /* @__PURE__ */ jsx(TaskState, { snapshots: item }, index))
+    }
+  );
+}
+function TaskState(props) {
+  const [taskState] = props.snapshots.sort((a, b) => {
+    const value = b.timestamp - a.timestamp;
+    if (value !== 0) return value;
+    return a.status === "pending" ? 1 : -1;
+  });
+  const [streamData, setStreamData] = useState2([]);
+  useEffect2(() => {
+    Socket.mitt.on("data", (data) => {
+      if (data.type !== "stream") return;
+      if (data.data.task.id !== taskState.task.id) return;
+      setStreamData((value) => [...value, data.data]);
+    });
+  }, []);
+  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsxs("div", { className: `flex flex-col items-start chat chat-start mb-5`, children: [
+    /* @__PURE__ */ jsxs("div", { className: "chat-header opacity-50 mb-1 text-xs ", children: [
+      /* @__PURE__ */ jsx("span", { children: taskState.task.origin }),
+      /* @__PURE__ */ jsx("span", { className: "text-xs badge badge-xs badge-primary mx-2", children: taskState.task.branch }),
+      /* @__PURE__ */ jsx("span", { className: "kbd kbd-xs", children: taskState.task.selector })
+    ] }),
+    /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: `chat-bubble min-w-80 relative chat-bubble-${{
+          pending: "neutral",
+          progress: "neutral",
+          resolved: "success",
+          rejected: "error"
+        }[taskState.status]}`,
+        children: [
+          taskState.logs && /* @__PURE__ */ jsx(Logs, { logs: taskState.logs }),
+          taskState.commits?.length ? /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx("h6", { children: "\u63D0\u4EA4\u8BB0\u5F55" }),
+            /* @__PURE__ */ jsx("ul", { className: "text-xs", children: taskState.commits.map((commitItem) => /* @__PURE__ */ jsxs("li", { children: [
+              "\u2726 ",
+              commitItem
+            ] })) })
+          ] }) : null,
+          taskState.status === "progress" && streamData.length !== 0 && /* @__PURE__ */ jsx(Code, { title: "stream", theme: "info", children: streamData.map(
+            (item) => item.data
+          ).join("") }),
+          taskState.packages?.length !== 0 && /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx("h6", { children: "\u9879\u76EE\u5217\u8868" }),
+            /* @__PURE__ */ jsx("ul", { className: "text-xs", children: taskState.packages?.map((packageItem) => /* @__PURE__ */ jsx(PkgItem, { item: packageItem })) })
+          ] })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "chat-footer opacity-50 text-xs mt-1", children: [
+      /* @__PURE__ */ jsx("span", { className: "font-bold", children: new Date(taskState.timestamp).toLocaleString() }),
+      "from:",
+      " ",
+      /* @__PURE__ */ jsx("span", { class: "badge badge-xs badge-secondary mr-2", children: taskState.task.from })
+    ] })
+  ] }) });
+}
+function PkgItem(props) {
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsxs("li", { className: "text-sm flex items-center gap-2", children: [
+      {
+        progress: /* @__PURE__ */ jsx("span", { className: "loading loading-spinner loading-xs" }),
+        pending: /* @__PURE__ */ jsx("span", { className: "text-warning", children: "-" }),
+        rejected: /* @__PURE__ */ jsx("span", { className: "text-error", children: "\u2717" }),
+        resolved: /* @__PURE__ */ jsx("span", { className: "text-primary", children: "\u2713" })
+      }[props.item.status],
+      props.item.path
+    ] }),
+    props.item.logs && /* @__PURE__ */ jsx(Logs, { logs: props.item.logs })
+  ] });
+}
+function Code(props) {
+  return /* @__PURE__ */ jsx(
+    "pre",
+    {
+      title: props.title,
+      className: `text-xs overflow-x-scroll bg-${props.theme}-content rounded text-${props.theme} p-2 my-2 max-h-80 max-w-5xl`,
+      ref: (el) => el?.scrollTo(0, el.scrollHeight),
+      children: /* @__PURE__ */ jsx("code", { children: props.children })
+    }
+  );
+}
+function Logs(props) {
+  if (typeof props.logs === "string") return props.logs;
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Code, { title: "stdout", theme: "info", children: props.logs.stdout }),
+    props.logs.signal,
+    /* @__PURE__ */ jsx(Code, { title: "stderr", theme: "error", children: props.logs.stderr })
+  ] });
+}
+
+// ui/src/components/Workspace.tsx
+import { jsx as jsx2, jsxs as jsxs2 } from "preact/jsx-runtime";
+function Workspace() {
+  const { workspace } = useWorkspace();
+  const { list, fetchTasks } = useTaskHubList();
+  useEffect3(() => {
+    Socket.mitt.on("data", (data) => {
+      if (data.type === "snapshot") fetchTasks();
+    });
+  }, []);
+  return /* @__PURE__ */ jsxs2("div", { className: "flex gap-2 w-screen", children: [
+    workspace.length ? /* @__PURE__ */ jsx2("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll max-w-sm", children: workspace.map((item) => /* @__PURE__ */ jsx2(
+      Repo,
+      {
+        repo: item,
+        onCreateTask: async (origin, branch, selector) => {
+          await fetch(getApi("task"), {
+            method: "POST",
+            body: JSON.stringify({ origin, branch, selector })
+          });
+          fetchTasks();
+        }
+      }
+    )) }) : null,
+    /* @__PURE__ */ jsx2(TaskHubList, { list }),
+    /* @__PURE__ */ jsx2(Hub, {})
+  ] });
+}
+function Repo(props) {
+  return /* @__PURE__ */ jsx2(
+    "form",
+    {
+      className: "shadow bg-base-100 rounded-2xl p-2 flex flex-col gap-2 border-primary my-2",
+      onSubmit: (e) => {
+        e.preventDefault();
+        const form = new FormData(e.currentTarget);
+        props.onCreateTask(
+          props.repo.origin,
+          props.repo.branch,
+          form.get("selector")
+        );
+        e.currentTarget.reset();
+      },
+      children: /* @__PURE__ */ jsxs2("div", { className: "collapse collapse-arrow border", children: [
+        /* @__PURE__ */ jsx2("input", { type: "checkbox" }),
+        /* @__PURE__ */ jsxs2("div", { className: "collapse-title", children: [
+          /* @__PURE__ */ jsx2("span", { children: props.repo.origin }),
+          /* @__PURE__ */ jsx2("span", { className: "badge badge-primary badge ml-2", children: props.repo.branch })
+        ] }),
+        /* @__PURE__ */ jsxs2("div", { className: "collapse-content", children: [
+          /* @__PURE__ */ jsx2("div", { className: "flex flex-wrap justify-center gap-1", children: props.repo.packages.map((item) => /* @__PURE__ */ jsx2(
+            "input",
+            {
+              type: "radio",
+              required: true,
+              "aria-label": item,
+              name: "selector",
+              className: "btn btn-xs btn-outline",
+              value: item
+            },
+            item
+          )) }),
+          /* @__PURE__ */ jsx2("button", { type: "submit", className: "btn btn-primary block btn-wide mt-5 mx-auto btn-sm", children: "\u63D0\u4EA4\u4EFB\u52A1" })
+        ] })
+      ] })
+    },
+    props.repo.path
+  );
+}
+function TaskHubList(props) {
+  return /* @__PURE__ */ jsx2("div", { className: "stack fixed bottom-2 right-2", children: props.list.map((item) => {
+    return /* @__PURE__ */ jsxs2("div", { className: "shadow rounded-lg p-4 bg-base-100 border text-center text-sm", children: [
+      item.origin,
+      /* @__PURE__ */ jsx2("span", { className: "badge badge-primary badge-sm mx-2", children: item.branch }),
+      /* @__PURE__ */ jsx2("span", { className: "kbd kbd-sm", children: item.selector })
+    ] });
+  }) });
+}
+
+// ui/workspace.tsx
+import { jsx as jsx3 } from "preact/jsx-runtime";
+render(/* @__PURE__ */ jsx3(Workspace, {}), document.getElementById("root"));
