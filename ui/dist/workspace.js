@@ -271,7 +271,7 @@ function Workspace() {
     });
   }, []);
   return /* @__PURE__ */ jsxs2("div", { className: "flex gap-2 w-screen", children: [
-    workspace.length ? /* @__PURE__ */ jsx2("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll max-w-sm", children: workspace.map((item) => /* @__PURE__ */ jsx2(
+    workspace.length ? /* @__PURE__ */ jsx2("div", { className: "p-2 bg-base-200 h-screen overflow-y-scroll max-w-xl", children: workspace.map((item) => /* @__PURE__ */ jsx2(
       Repo,
       {
         repo: item,

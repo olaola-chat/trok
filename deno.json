@@ -20,7 +20,7 @@
     "serve:workspace": "deno serve --watch -A --host 127.0.0.1 server/workspace.tsx",
     "serve:hub": "deno serve --watch -A --host 127.0.0.1 server/hub.tsx",
     "test:cli": "deno -A lib/cli.ts --notify https://api.sleeplessplanet.com,https://github.com/asdf/80asdf",
-    "buildUI": "deno -A buildUI.ts"
+    "buildUI": "deno -A npm:esbuild ui/workspace.tsx ui/hub.tsx --bundle --outdir=ui/dist --format=esm"
   },
 
   "fmt": {
