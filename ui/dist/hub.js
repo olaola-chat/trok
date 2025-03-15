@@ -1,11 +1,11 @@
 // ui/hub.tsx
-import { render } from "preact";
+import { render } from "https://esm.sh/preact@10.26.4";
 
 // ui/src/components/Hub.tsx
-import { useEffect as useEffect2, useState as useState2 } from "preact/hooks";
+import { useEffect as useEffect2, useState as useState2 } from "https://esm.sh/preact@10.26.4/hooks";
 
 // ui/src/service.ts
-import { useCallback, useEffect, useState } from "preact/hooks";
+import { useCallback, useEffect, useState } from "https://esm.sh/preact@10.26.4/hooks";
 
 // lib/mitt.ts
 function mitt(all) {
@@ -130,7 +130,7 @@ function useSnapshots() {
 }
 
 // ui/src/components/Hub.tsx
-import { Fragment, jsx, jsxs } from "preact/jsx-runtime";
+import { Fragment, jsx, jsxs } from "https://esm.sh/preact@10.26.4/jsx-runtime";
 function Hub() {
   const snapshots = useSnapshots();
   const snapShotGroups = Object.values(
@@ -236,5 +236,5 @@ function Logs(props) {
 }
 
 // ui/hub.tsx
-import { jsx as jsx2 } from "preact/jsx-runtime";
+import { jsx as jsx2 } from "https://esm.sh/preact@10.26.4/jsx-runtime";
 render(/* @__PURE__ */ jsx2(Hub, {}), document.getElementById("root"));

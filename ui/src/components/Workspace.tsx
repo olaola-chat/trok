@@ -1,5 +1,5 @@
 /** @jsxRuntime automatic */
-/** @jsxImportSource preact */
+/** @jsxImportSource https://esm.sh/preact@10.26.4 */
 
 import {
   getApi,
@@ -7,7 +7,7 @@ import {
   useTaskHubList,
   useWorkspace,
 } from "../service.ts";
-import { useEffect } from "preact/hooks";
+import { useEffect } from "https://esm.sh/preact@10.26.4/hooks";
 import type { Task, Repository } from "../../../lib/type.ts";
 import Hub from "./Hub.tsx";
 

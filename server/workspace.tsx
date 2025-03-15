@@ -1,6 +1,7 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource preact */
 
+
 import type { Task } from "../lib/type.ts";
 import hub from "./hub.tsx";
 import { basename } from "@std/path";
@@ -93,14 +94,7 @@ class TaskHub {
 
 async function renderUI() {
   const script = await getScript("workspace.js");
-
-  const imports = {
-    "imports": {
-      "preact": "https://esm.sh/preact@10.23.1",
-      "preact/": "https://esm.sh/preact@10.23.1/",
-    },
-  };
-
+  
   return (
     <html>
       <head>
@@ -110,10 +104,6 @@ async function renderUI() {
           type="text/css"
         />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" />
-        <script
-          type="importmap"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(imports) }}
-        />
       </head>
       <body className="flex gap-2">
         <div id="root" />

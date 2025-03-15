@@ -8,9 +8,7 @@ await esbuild.build({
   entryPoints: entries.map(item=> resolve(import.meta.dirname!, item)),
   outdir,
   bundle: true,
-  external: ["preact"],
-  // minify: true,
-  format: "esm"
+  format: "esm",
 });
 
 await esbuild.stop();

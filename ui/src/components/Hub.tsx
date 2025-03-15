@@ -1,7 +1,7 @@
 /** @jsxRuntime automatic */
-/** @jsxImportSource preact */
+/** @jsxImportSource https://esm.sh/preact@10.26.4 */
 
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "https://esm.sh/preact@10.26.4/hooks";
 import type {
   ExecLog,
   Package,

@@ -1,5 +1,5 @@
 /** @jsxRuntime automatic */
-/** @jsxImportSource npm:preact@10.25.4 */
+/** @jsxImportSource preact */
 
 import { render } from "preact-render-to-string";
 import { basename, resolve } from "@std/path";
@@ -70,11 +70,7 @@ async function dispatch(task: FlowTask) {
     `aliflow webhook response body: ${JSON.stringify(data, null, 2)}`,
   );
   if (data.successful) {
-    return html(render(
-      <Document>
-        <Success />
-      </Document>,
-    ));
+    return html(render(<Success />));
   }
   return json(data);
 }
@@ -85,11 +81,7 @@ export default {
 
     switch (`${req.method} ${pathname}`) {
       case "GET /flows/": {
-        return html(render(
-          <Document>
-            <Flows />
-          </Document>,
-        ));
+        return html(render(<Flows />));
       }
 
       case "POST /dispatch": {
@@ -122,7 +114,7 @@ export default {
   },
 };
 
-function Document(props: { children: preact.JSX.Element }) {
+function Flows() {
   return (
     <html>
       <head>
@@ -134,62 +126,71 @@ function Document(props: { children: preact.JSX.Element }) {
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4">
         </script>
       </head>
-      <body>{props.children}</body>
+      <body>
+        <div className="w-screen bg-base-300 flex">
+          <div className="flex flex-col gap-2 w-96 h-screen overflow-y-scroll p-5">
+            {flows.map((item) => {
+              return (
+                <form
+                  method="post"
+                  action="../dispatch"
+                  key={`${item.origin}/${item.branch}`}
+                  className="shadow bg-base-100 rounded-2xl p-5 flex flex-col gap-2 border-primary"
+                >
+                  <div>
+                    {item.origin}
+                    <span className="badge badge-outline ml-2 badge-sm">
+                      {item.branch}
+                    </span>
+                  </div>
+                  <input type="hidden" name="origin" value={item.origin} />
+                  <input type="hidden" name="branch" value={item.branch} />
+                  <input
+                    required
+                    type="text"
+                    name="selector"
+                    className="input input-bordered input-sm"
+                    placeholder="eg: ./act/act-center"
+                  />
+                  <button type="submit" class="btn btn-primary btn-sm">
+                    提交打包任务
+                  </button>
+                </form>
+              );
+            })}
+          </div>
+          <iframe
+            id="trok"
+            src=".."
+            className="w-2/3 h-screen overflow-y-scroll grow bg-base-100 p-5"
+          >
+          </iframe>
+        </div>
+      </body>
     </html>
-  );
-}
-
-function Flows() {
-  return (
-    <div className="w-screen bg-base-300 flex">
-      <div className="flex flex-col gap-2 w-96 h-screen overflow-y-scroll p-5">
-        {flows.map((item) => {
-          return (
-            <form
-              method="post"
-              action="../dispatch"
-              key={`${item.origin}/${item.branch}`}
-              className="shadow bg-base-100 rounded-2xl p-5 flex flex-col gap-2 border-primary"
-            >
-              <div>
-                {item.origin}
-                <span className="badge badge-outline ml-2 badge-sm">
-                  {item.branch}
-                </span>
-              </div>
-              <input type="hidden" name="origin" value={item.origin} />
-              <input type="hidden" name="branch" value={item.branch} />
-              <input
-                required
-                type="text"
-                name="selector"
-                className="input input-bordered input-sm"
-                placeholder="eg: ./act/act-center"
-              />
-              <button type="submit" class="btn btn-primary btn-sm">
-                提交打包任务
-              </button>
-            </form>
-          );
-        })}
-      </div>
-      <iframe
-        id="trok"
-        src=".."
-        className="w-2/3 h-screen overflow-y-scroll grow bg-base-100 p-5"
-      >
-      </iframe>
-    </div>
   );
 }
 
 function Success() {
   return (
-    <div className="w-screen">
-      <p>任务提交成功</p>
-      <a className="btn btn-primary" href="./flows/">
-        回到首页
-      </a>
-    </div>
+    <html>
+      <head>
+        <link
+          href="https://cdn.jsdelivr.net/npm/daisyui@5.0.0-beta.9/daisyui.css"
+          rel="stylesheet"
+          type="text/css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4">
+        </script>
+      </head>
+      <body>
+        <div className="w-screen">
+          <p>任务提交成功</p>
+          <a className="btn btn-primary" href="./flows/">
+            回到首页
+          </a>
+        </div>
+      </body>
+    </html>
   );
 }

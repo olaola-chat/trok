@@ -1,6 +1,6 @@
 {
   "name": "@trok/trok",
-  "version": "0.1.61",
+  "version": "0.1.62",
   "license": "MIT",
   "exports": {
     "./cli": "./lib/cli.ts",
@@ -12,8 +12,8 @@
   "imports": {
     "@std/cli": "jsr:@std/cli@^1.0.9",
     "@std/path": "jsr:@std/path@^1.0.8",
-    "preact": "npm:preact@10.25.4",
-    "preact-render-to-string": "npm:preact-render-to-string@^6.5.12"
+    "preact": "npm:preact@^10.26.4",
+    "preact-render-to-string": "npm:preact-render-to-string@^6.5.13"
   },
 
   "tasks": {

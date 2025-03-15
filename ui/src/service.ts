@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "preact/hooks";
+import { useCallback, useEffect, useState } from "https://esm.sh/preact@10.26.4/hooks";
 import type {
   Repository,
   Snapshot,

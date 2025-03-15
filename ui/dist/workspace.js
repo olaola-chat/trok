@@ -1,8 +1,8 @@
 // ui/workspace.tsx
-import { render } from "preact";
+import { render } from "https://esm.sh/preact@10.26.4";
 
 // ui/src/service.ts
-import { useCallback, useEffect, useState } from "preact/hooks";
+import { useCallback, useEffect, useState } from "https://esm.sh/preact@10.26.4/hooks";
 
 // lib/mitt.ts
 function mitt(all) {
@@ -151,11 +151,11 @@ function useSnapshots() {
 }
 
 // ui/src/components/Workspace.tsx
-import { useEffect as useEffect3 } from "preact/hooks";
+import { useEffect as useEffect3 } from "https://esm.sh/preact@10.26.4/hooks";
 
 // ui/src/components/Hub.tsx
-import { useEffect as useEffect2, useState as useState2 } from "preact/hooks";
-import { Fragment, jsx, jsxs } from "preact/jsx-runtime";
+import { useEffect as useEffect2, useState as useState2 } from "https://esm.sh/preact@10.26.4/hooks";
+import { Fragment, jsx, jsxs } from "https://esm.sh/preact@10.26.4/jsx-runtime";
 function Hub() {
   const snapshots = useSnapshots();
   const snapShotGroups = Object.values(
@@ -261,7 +261,7 @@ function Logs(props) {
 }
 
 // ui/src/components/Workspace.tsx
-import { jsx as jsx2, jsxs as jsxs2 } from "preact/jsx-runtime";
+import { jsx as jsx2, jsxs as jsxs2 } from "https://esm.sh/preact@10.26.4/jsx-runtime";
 function Workspace() {
   const { workspace } = useWorkspace();
   const { list, fetchTasks } = useTaskHubList();
@@ -340,5 +340,5 @@ function TaskHubList(props) {
 }
 
 // ui/workspace.tsx
-import { jsx as jsx3 } from "preact/jsx-runtime";
+import { jsx as jsx3 } from "https://esm.sh/preact@10.26.4/jsx-runtime";
 render(/* @__PURE__ */ jsx3(Workspace, {}), document.getElementById("root"));
