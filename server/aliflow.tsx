@@ -7,7 +7,7 @@ import hub from "./hub.tsx";
 import { getShortCompare, html, isSameGitOrigin, json } from "../lib/util.ts";
 import type { GithubWebhookBody } from "../lib/type.ts";
 
-type Flow = {
+type AliFlow = {
   origin: string;
   branch: string;
   host: string[];
@@ -15,14 +15,14 @@ type Flow = {
   notify: string;
 };
 
-type FlowTask = {
+type AliFlowTask = {
   origin: string;
   branch: string;
   selector: string;
   from: string;
 };
 
-type FlowWebhookBody = {
+type AliFlowWebhookBody = {
   errorCode: string;
   errorMsg: string;
   successful: false;
@@ -31,41 +31,41 @@ type FlowWebhookBody = {
   successful: true;
 };
 
-let flows: Flow[] = [];
+let aliflows: AliFlow[] = [];
 
-if (Deno.env.has("FLOWS_URL")) {
-  flows = await fetch(Deno.env.get("FLOWS_URL")!).then((res) =>
+if (Deno.env.has("ALIFLOWS_URL")) {
+  aliflows = await fetch(Deno.env.get("ALIFLOWS_URL")!).then((res) =>
     res.json()
-  ) as Flow[];
+  ) as AliFlow[];
 } else {
   try {
-    const data = Deno.readFileSync(resolve(Deno.cwd(), "flows.json"));
+    const data = Deno.readFileSync(resolve(Deno.cwd(), "aliflow.json"));
     const text = new TextDecoder().decode(data);
-    flows = JSON.parse(text);
+    aliflows = JSON.parse(text);
   } catch (err) {
     console.error(`未找到流水线配置文件`, (err as Error).message);
     throw err;
   }
 }
 
-async function dispatch(task: FlowTask) {
-  const flow = flows.find((item) => {
+async function dispatch(task: AliFlowTask) {
+  const aliflow = aliflows.find((item) => {
     return isSameGitOrigin(item.origin, task.origin) &&
       item.branch === task.branch;
   });
-  if (!flow) return new Response("未找到此仓库或分支的流水线", { status: 404 });
+  if (!aliflow) return new Response("未找到此仓库或分支的流水线", { status: 404 });
 
-  const res = await fetch(flow.webhook, {
+  const res = await fetch(aliflow.webhook, {
     method: "POST",
     body: JSON.stringify({
       selector: task.selector,
-      notify: flow.notify,
+      notify: aliflow.notify,
       from: task.from,
     }),
     headers: { "Content-Type": "application/json" },
   });
 
-  const data = await res.json() as FlowWebhookBody;
+  const data = await res.json() as AliFlowWebhookBody;
   console.log(
     `aliflow webhook response body: ${JSON.stringify(data, null, 2)}`,
   );
@@ -80,8 +80,8 @@ export default {
     const { pathname } = new URL(req.url);
 
     switch (`${req.method} ${pathname}`) {
-      case "GET /flows/": {
-        return html(render(<Flows />));
+      case "GET /aliflow/": {
+        return html(render(<AliFlow />));
       }
 
       case "POST /dispatch": {
@@ -114,7 +114,7 @@ export default {
   },
 };
 
-function Flows() {
+function AliFlow() {
   return (
     <html>
       <head>
@@ -129,7 +129,7 @@ function Flows() {
       <body>
         <div className="w-screen bg-base-300 flex">
           <div className="flex flex-col gap-2 w-96 h-screen overflow-y-scroll p-5">
-            {flows.map((item) => {
+            {aliflows.map((item) => {
               return (
                 <form
                   method="post"
@@ -186,7 +186,7 @@ function Success() {
       <body>
         <div className="w-screen">
           <p>任务提交成功</p>
-          <a className="btn btn-primary" href="./flows/">
+          <a className="btn btn-primary" href="./aliflow/">
             回到首页
           </a>
         </div>

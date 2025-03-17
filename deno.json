@@ -19,6 +19,7 @@
   "tasks": {
     "serve:workspace": "deno serve --watch -A --host 127.0.0.1 server/workspace.tsx",
     "serve:hub": "deno serve --watch -A --host 127.0.0.1 server/hub.tsx",
+    "serve:aliflow": "deno serve --watch -A --host 127.0.0.1 server/aliflow.tsx",
     "test:cli": "deno -A lib/cli.ts",
     "buildUI": "deno -A npm:esbuild ui/workspace.tsx ui/hub.tsx --bundle --outdir=ui/dist --format=esm"
   },
