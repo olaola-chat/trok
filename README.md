@@ -1,4 +1,4 @@
-轻量的nodejs, bun, deno 项目打包工具
+# 轻量的nodejs, bun, deno 项目打包工具
 
 # Get Started:
 新建一个目录如my-project，在目录下clone你要打包的项目所在的仓库, 然后在my-project目录下执行以下命令，以启动打包服务

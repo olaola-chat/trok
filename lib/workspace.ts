@@ -27,11 +27,11 @@ const stream = (data: StreamData): SocketData => ({
 
 export default abstract class Workspace {
   static #dir = Deno.args[0] || Deno.cwd();
-  static set dir(path: string){
+  static set dir(path: string) {
     this.#dir = path;
-    this.repos = this.findGitRepositories(this.#dir); 
+    this.repos = this.findGitRepositories(this.#dir);
   }
-  static get dir(){
+  static get dir() {
     return this.#dir;
   }
 
@@ -59,8 +59,7 @@ export default abstract class Workspace {
     const changedFiles = new TextDecoder()
       .decode(stdout)
       .split("\n")
-      .filter(Boolean)
-
+      .filter(Boolean);
 
     // 预处理包路径，去除开头的 './' 或 '.' 并记录原始路径
     const packageEntries = repository.packages.map((pkg) => ({
@@ -74,7 +73,7 @@ export default abstract class Workspace {
     );
 
     const changed = new Set<string>();
-    
+
     for (const file of changedFiles) {
       for (const pkgEntry of sortedPackageEntries) {
         const { normalized, original } = pkgEntry;
@@ -112,7 +111,7 @@ export default abstract class Workspace {
         const packages = util.findPackages(dirPath).map((item) =>
           item.replace(dirPath, ".")
         );
-        repositories.push({ origin, branch, path: resolve( dirPath), packages });
+        repositories.push({ origin, branch, path: resolve(dirPath), packages });
       }
     }
     return repositories;
@@ -124,11 +123,17 @@ export default abstract class Workspace {
   ) {
     const absolutePackagePath = join(repository.path, packagePath);
     const packageManager = util.getPackageManager(absolutePackagePath);
+    const argsMap: Record<string, string[]> = {
+      npm: ["ci"],
+      yarn: ["install", "--frozen-lockfile"],
+      pnpm: ["install", "--frozen-lockfile"],
+      bun: ["install", "--frozen-lockfile"],
+      deno: ["install", "--frozen"],
+    };
+
     await util.streamExec(packageManager, {
       cwd: absolutePackagePath,
-      args: packageManager === "npm"
-        ? ["ci"]
-        : ["install", "--frozen-lockfile"],
+      args: argsMap[packageManager],
       onStreamData: (data) => {
         this.notifyClient.send(
           stream({ task: this.currentTask!, data }),

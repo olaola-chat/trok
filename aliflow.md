@@ -1,6 +1,6 @@
 服务部署:
 
-1. 前往云效流水线编辑页面的触发设置里寻找流水线webhook地址,找到webhook地址后,
+1. 前往阿里云效流水线编辑页面的触发设置里寻找流水线webhook地址,找到webhook地址后,
    准备一个flows.json文件，json格式类型为:
 
 ```typescript
