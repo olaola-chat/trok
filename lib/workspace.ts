@@ -188,7 +188,7 @@ export default abstract class Workspace {
 
   private static async prepareTask(task: Task) {
     const repository = this.repos.find((repo) =>
-      util.isSameGitOrigin(repo.origin, task.origin)
+      util.isSameGitOrigin(repo.origin, task.origin) && repo.branch === task.branch
     );
     if (!repository) {
       throw new Error(`repository ${task.origin} not found`);
